@@ -176,3 +176,10 @@ function pdf_forms_type_submission_edit($form, &$form_state, $bunlde, $sid) {
   
   return $form;
 }
+
+function pdf_forms_type_submission_edit_submit($form, &$form_state) {
+	$values = serialize($form_state['input']);
+	$submission = pdf_form_load($form_state['build_info']['args'][1]);
+	$submission->pdfdata = $values;
+	pdf_form_save($submission);
+}
