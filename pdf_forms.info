@@ -7,7 +7,6 @@ dependencies[] = libraries (>=2.x)
 dependencies[] = pdf
 dependencies[] = entity
 dependencies[] = file_entity
-dependencies[] = entityform
 dependencies[] = token
 
 files[] = includes/PDFFormsController.inc
