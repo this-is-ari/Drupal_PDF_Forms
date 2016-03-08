@@ -124,6 +124,7 @@ function pdftk_create_completed_form($entity, $data_entities = NULL, $template =
 
   $filename_raw = db_query('SELECT filename FROM {pdf_forms_type} WHERE bundle = :bundle', array(':bundle' => $entity->bundle))->fetchField();
   $filename = token_replace($filename_raw, $token_objects);
+	
   $file_schema = file_default_scheme();
   $destination =  "{$file_schema}://{$filename}";
 
@@ -131,6 +132,7 @@ function pdftk_create_completed_form($entity, $data_entities = NULL, $template =
 
   // Store data to a file.
   $xfdffile = file_save_data($XFDF, "{$destination}.pdf.xfdf", FILE_EXISTS_REPLACE);
+	
   file_usage_add($xfdffile, 'pdf_forms', $entity->bundle, $entity->submission_id);
 
   $pdftk = variable_get('pdf_forms_pdftk_path', 'pdftk');
@@ -146,8 +148,10 @@ function pdftk_create_completed_form($entity, $data_entities = NULL, $template =
   ob_start();
   passthru($command);
   $response = ob_get_clean();
+	//dvm($response);
   $file = file_save_data($response, "{$destination}.pdf", FILE_EXISTS_REPLACE);
   file_usage_add($file, 'pdf_forms', $entity->bundle, $entity->submission_id);
+	$file->pdfdata=$map; 
   module_invoke_all('pdf_forms_generate', $file);
 
   return $file;

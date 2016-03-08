@@ -19,7 +19,7 @@ class PDFFormsController extends DrupalDefaultEntityController {
   * Saves the entity.
   */
   public function save(&$entity) {
-    module_load_include('inc', 'pdf_forms', 'includes/pdf_forms.pdftk');
+	  module_load_include('inc', 'pdf_forms', 'includes/pdf_forms.pdftk');
 
     // We need to create the entity first, and then we need to generate the PDF file.
     if (empty($entity->submission_id)) {
@@ -33,7 +33,7 @@ class PDFFormsController extends DrupalDefaultEntityController {
     }
 
     $primary_keys = $entity->submission_id ? 'submission_id' : array();
-    drupal_write_record('pdf_forms_data', $entity, $primary_keys);
+		drupal_write_record('pdf_forms_data', $entity, $primary_keys);
     $invocation = 'entity_insert';
     if (empty($primary_keys)) {
       field_attach_insert('pdf_form', $entity);
@@ -45,11 +45,14 @@ class PDFFormsController extends DrupalDefaultEntityController {
     module_invoke_all($invocation, $entity, 'pdf_form');
 
     // generate the pdf.
-    $file = pdftk_create_completed_form($entity);
-    $entity->fid = $file->fid;
+    //$file = pdftk_create_completed_form($entity);
+    //$entity->fid = $entity->fid;
+		
+		
 
     // Update the entity database record with the generated FID.
     $primary_keys = $entity->submission_id ? 'submission_id' : array();
+	
     drupal_write_record('pdf_forms_data', $entity, $primary_keys);
 
     if (module_exists('rules')) {

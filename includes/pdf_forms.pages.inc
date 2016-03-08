@@ -155,3 +155,31 @@ function pdf_forms_submissions_overview() {
 
   return theme('table', array('header' => $header, 'rows' => $rows, 'empty' => t('No submissions in database.'))) . theme('pager');
 }
+
+function pdf_forms_type_submission_edit($form, &$form_state, $bunlde, $sid) {
+	//dvm($bunlde);
+	//dvm($sid);
+	$submission = pdf_form_load($sid);
+	$pdfdata=unserialize($submission->pdfdata);
+	//dvm($pdfdata);
+	foreach($pdfdata as $fname => $fvalue){
+		$form[$fname] = array(
+			'#type'=>'textfield',
+			'#title'=>$fname,		
+			'#value' => $fvalue,
+		);
+	}
+  $form['submit_button'] = array(
+    '#type' => 'submit',
+    '#value' => t('Save'),
+  );
+  
+  return $form;
+}
+
+function pdf_forms_type_submission_edit_submit($form, &$form_state) {
+	$values = serialize($form_state['input']);
+	$submission = pdf_form_load($form_state['build_info']['args'][1]);
+	$submission->pdfdata = $values;
+	pdf_form_save($submission);
+}

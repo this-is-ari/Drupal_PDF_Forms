@@ -36,12 +36,12 @@ function pdf_forms_schema() {
     'fields' => array(
       'bundle' => array(
         'type' => 'varchar',
-        'length' => 255
+        'length' => 100
       ),
       'machine_name' => array(
         'type' => 'varchar',
         'binary' => TRUE,
-        'length' => 255
+        'length' => 100
       ),
       'name' => array(
         'type' => 'varchar',
@@ -102,7 +102,11 @@ function pdf_forms_schema() {
       ),
       'fid' => array(
         'type' => 'int'
-      )
+      ),
+      'pdfdata' => array(
+				'type' => 'text',
+				'size' => 'big'
+      ),			
     ),
     'primary key' => array('submission_id')
   );
@@ -130,6 +134,13 @@ function pdf_forms_update_7001() {
     'type' => 'text',
   );
   db_add_field( 'pdf_forms_type', 'filename', $spec);
+}
+function pdf_forms_update_7002() {
+  $spec = array(
+		'type' => 'text',
+		'size' => 'big'
+  );
+  db_add_field( 'pdf_forms_data', 'pdfdata', $spec);
 }
 
 /**
