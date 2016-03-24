@@ -72,6 +72,12 @@ function pdf_forms_schema() {
       'width' => array(
         'type' => 'int'
       ),
+      'type' => array(
+        'type' => 'text'
+      ),			
+      'fieldinfo' => array(
+        'type' => 'text'
+      ),				
     ),
     'unique keys' => array(
       'bundle_field' => array(
@@ -142,7 +148,18 @@ function pdf_forms_update_7002() {
   );
   db_add_field( 'pdf_forms_data', 'pdfdata', $spec);
 }
-
+function pdf_forms_update_7003() {
+  $spec = array(
+		'type' => 'text',
+  );
+  db_add_field( 'pdf_forms_field_mapping', 'type', $spec);
+}
+function pdf_forms_update_7004() {
+  $spec = array(
+		'type' => 'text',
+  );
+  db_add_field( 'pdf_forms_field_mapping', 'fieldinfo', $spec);
+}
 /**
 * Implements hook_requirements
 */

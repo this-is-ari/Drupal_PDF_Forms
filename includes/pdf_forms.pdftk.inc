@@ -52,21 +52,22 @@ function pdf_forms_fields( $file = NULL) {
   $pdf_file = drupal_realpath($file->uri);
   $command = "{$pdftk} " . escapeshellarg($pdf_file) . " dump_data_fields";
   exec($command, $data, $status);
-
+	
   if (count($data) == 0) {
     watchdog('pdf_forms', 'Could not locate form fields in PDF: %file.', array( '%file' => $pdf_file ), WATCHDOG_WARNING);
   }
   else {
-    // Parse the returned data.
+	  // Parse the returned data.
     $field_map = array(
       'FieldType' => 'type',
       'FieldName' => 'name',
       'FieldFlags' => 'flags',
-      'FieldJustification' => 'justification'
+      'FieldJustification' => 'justification',
+			'FieldStateOption' => 'fieldinfo'
     );
-    $fields = array();
+    $fieldsdata = array();
     $index = -1;
-    foreach ($data as $id => $row) {
+    /*foreach ($data as $id => $row) {
       if ($row == '---') {
         // Next Field
         $index++;
@@ -80,9 +81,78 @@ function pdf_forms_fields( $file = NULL) {
         // Set the column's data value
         $fields[$index][$field_map[$column]] = trim($value);
       }
-    }
+    }*/
+    foreach ($data as $id => $row) {
+      if ($row == '---') {
+        // Next Field
+        $index++;
+        continue;
+      }
+      $output = explode(':', $row);
+
+      $column = $output[0];
+      $value = $output[1];
+      if (in_array($column, array_keys($field_map))) {
+        // Set the column's data value
+        $fieldsdata[$index][$column][] = trim($value);
+      }
+    }		
+		$fields = array();
+		$index = 0;
+		foreach($fieldsdata as $field){
+			if($field['FieldType'][0]=="Button" && $field['FieldFlags'][0]=="49152"){
+				$field['FieldType'][0] = "Radio";
+			}
+			foreach($field as $ftype => $fvalue){
+				
+				if($ftype == 'FieldStateOption'){
+					$fvalue = serialize($fvalue);
+				}
+				else{
+					$fvalue = $fvalue[0];
+				}
+				$fields[$index][$field_map[$ftype]] = $fvalue; 
+			}
+			$index++;
+		}
   }
   return $fields;
+}
+
+
+/**
+Generate data from data entity for submission
+*/
+function pdftk_prepare_submission_data($entity, $data_entities = NULL){
+  // Load up any entities that are being passed
+  if ( !is_null($data_entities) ) {
+    foreach ($data_entities as $data_entity) {
+      $token_objects[$data_entity->type()] = $data_entity->value();
+    }
+  }
+
+  // Load up the field map data.
+  $map = array();
+  $map = pdftk_get_field_map($entity, $token_objects);
+	
+	return $map;
+}
+
+/**
+Prepare data arrray for PDF population
+*/
+function _pdftk_prepare_datatypes($bundle, $values){
+  $results = db_query('SELECT machine_name, type FROM {pdf_forms_field_mapping} WHERE bundle = :bundle', array( ':bundle' => $bundle)); 
+  foreach($results as $field_map) {
+		$map[$field_map->machine_name] = $field_map->type;
+	}
+	foreach($values as $name=>$value){
+		if($map[$name] == "Button" && ($value)){
+			$values[$name] = "On";
+		}
+	}
+
+return $values;
 }
 
 /**
@@ -118,6 +188,7 @@ function pdftk_create_completed_form($entity, $data_entities = NULL, $template =
   // Load up the field map data.
   $map = array();
   $map = pdftk_get_field_map($entity, $token_objects);
+	$map = _pdftk_prepare_datatypes($entity->bundle, $map);
 
   // Create the xfdf
   module_load_include('inc', 'pdf_forms', 'includes/pdf_forms.xfdf');
@@ -148,7 +219,64 @@ function pdftk_create_completed_form($entity, $data_entities = NULL, $template =
   ob_start();
   passthru($command);
   $response = ob_get_clean();
-	//dvm($response);
+	
+  $file = file_save_data($response, "{$destination}.pdf", FILE_EXISTS_REPLACE);
+  file_usage_add($file, 'pdf_forms', $entity->bundle, $entity->submission_id);
+	$file->pdfdata=$map; 
+  module_invoke_all('pdf_forms_generate', $file);
+
+  return $file;
+}
+
+function pdftk_generate_completed_form($entity, $data_entities = NULL, $template = FALSE) {
+
+  $save_path = variable_get('pdf_form_save_path', 'public://');
+  // Load up the template.
+  if (!$template) {
+    $template_fid = db_query('SELECT fid FROM {pdf_forms_type} WHERE bundle = :bundle', array(':bundle' => $entity->bundle))->fetchField();
+    $template = file_load($template_fid);
+  }
+
+  $token_objects = array();
+
+  $account = user_load($entity->uid);
+  $token_objects['user'] = $account;
+  $token_objects['pdf_form'] = $entity;
+
+  // Load up the field map data.
+  $map = array();
+  $map = pdftk_get_field_map($entity, $token_objects);	
+
+  // Create the xfdf
+  module_load_include('inc', 'pdf_forms', 'includes/pdf_forms.xfdf');
+
+  $filename_raw = db_query('SELECT filename FROM {pdf_forms_type} WHERE bundle = :bundle', array(':bundle' => $entity->bundle))->fetchField();
+  $filename = token_replace($filename_raw, $token_objects);
+	
+  $file_schema = file_default_scheme();
+  $destination =  "{$file_schema}://{$filename}";
+
+  $XFDF = pdf_forms_generate_xfdf("{$filename}.pdf.xfdf", $data_entities, 'UTF-8');
+
+  // Store data to a file.
+  $xfdffile = file_save_data($XFDF, "{$destination}.pdf.xfdf", FILE_EXISTS_REPLACE);
+	
+  file_usage_add($xfdffile, 'pdf_forms', $entity->bundle, $entity->submission_id);
+
+  $pdftk = variable_get('pdf_forms_pdftk_path', 'pdftk');
+
+  // Start shell command
+
+  $command = $pdftk . " "
+    . drupal_realpath($template->uri)
+    . ' fill_form '
+    . drupal_realpath($xfdffile->uri)
+    . ' output - flatten drop_xfa';
+
+  ob_start();
+  passthru($command);
+  $response = ob_get_clean();
+	
   $file = file_save_data($response, "{$destination}.pdf", FILE_EXISTS_REPLACE);
   file_usage_add($file, 'pdf_forms', $entity->bundle, $entity->submission_id);
 	$file->pdfdata=$map; 

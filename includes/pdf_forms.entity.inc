@@ -130,7 +130,7 @@ function pdf_forms_type_edit($form, &$form_state, $pdf_form_type = NULL) {
 
     module_load_include('inc', 'pdf_forms', 'includes/pdf_forms.pdftk');
     if ($fields = pdf_forms_fields($file)) {
-      $form['fields']['table'] = array(
+			$form['fields']['table'] = array(
         '#tree' => TRUE,
         '#theme' => 'table',
         '#header' => array(
@@ -158,6 +158,8 @@ function pdf_forms_type_edit($form, &$form_state, $pdf_form_type = NULL) {
       }
 
       foreach($fields as $index => $field) {
+					if(!isset($field['fieldinfo'])) $field['fieldinfo'] = NULL;
+
           $id = str_replace(' ', '-', $field['name']);
           $id = trim($id);
           $field_name = array(
@@ -168,8 +170,10 @@ function pdf_forms_type_edit($form, &$form_state, $pdf_form_type = NULL) {
 
           $field_type = array(
             '#id' => 'fields-table-' . $id . '-type',
-            '#type' => 'markup',
-            '#markup' => $field['type']
+            '#type' => 'textfield',
+            '#default_value' => $field['type'],
+						'#size' => '6',
+						'#attributes' => array('readonly' => 'readonly'),
           );
 
           $prefix = array(
@@ -193,9 +197,14 @@ function pdf_forms_type_edit($form, &$form_state, $pdf_form_type = NULL) {
           $machine_name = array(
             '#id' => 'fields-table-' . $id . '-machine-name',
             '#type' => 'value',
-            '#value' => $field['name']
+            '#default_value' => $field['name']
           );
-
+          $fieldinfo = array(
+            '#id' => 'fields-table-' . $id . '-fieldinfo',
+            '#type' => 'hidden',
+            '#default_value' => $field['fieldinfo']
+          );
+					
           $form['fields']['table'][$id] = array(
             'name' => &$field_name,
             'type' => &$field_type,
@@ -203,6 +212,7 @@ function pdf_forms_type_edit($form, &$form_state, $pdf_form_type = NULL) {
             'value' => &$value,
             'suffix' => &$suffix,
             'machine_name' => &$machine_name,
+						'fieldinfo' => &$fieldinfo,
           );
 
           $form['fields']['table']['#rows'][] = array(
@@ -211,6 +221,7 @@ function pdf_forms_type_edit($form, &$form_state, $pdf_form_type = NULL) {
             array('data' => &$prefix),
             array('data' => &$value),
             array('data' => &$suffix),
+						array('data' => &$fieldinfo),
           );
 
           unset($field_name);
@@ -219,6 +230,7 @@ function pdf_forms_type_edit($form, &$form_state, $pdf_form_type = NULL) {
           unset($value);
           unset($suffix);
           unset($machine_name);
+					unset($fieldinfo);
       }
       $token_types = array('pdf_form');
       $form['fields']['token_tree'] = array(
@@ -291,16 +303,19 @@ function pdf_forms_type_edit_submit($form, &$form_state) {
 
   /* Field mappings */
   $new_record = db_query('SELECT COUNT(*) FROM {pdf_forms_field_mapping} WHERE bundle = :bundle', array(':bundle' => $pdf_form_type->bundle))->fetchField();
- 
+
   foreach($form_state['input']['fields']['table'] as $machine_name => $field) {
-    $data = array(
+	  $data = array(
       'bundle' => $pdf_form_type->bundle,
       'machine_name' =>   $machine_name,
       'name' =>   $machine_name,
       'prefix' => $field['prefix'],
       'value' =>  $field['value'],
-      'suffix' => $field['suffix']
+      'suffix' => $field['suffix'],
+			'type' => $field['type'],
+			'fieldinfo' => $field['fieldinfo']
     );
+
     // Check if this is a new record
     $primary_keys = ($new_record > 0) ? array('bundle', 'machine_name') : array();
     $result = drupal_write_record('pdf_forms_field_mapping', $data, $primary_keys);

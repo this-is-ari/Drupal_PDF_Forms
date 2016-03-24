@@ -128,9 +128,13 @@ function pdf_forms_submissions_overview() {
       'data' => t('Created')
     ),
     array(
+      'field' => 's.submission_id',
+      'data' => t('Edit Form')
+    ),	
+    array(
       'field' => 's.fid',
-      'data' => t('View Form')
-    )
+      'data' => t('View PDF')
+    ),		
   );
 
   $query = db_select('pdf_forms_data', 's');
@@ -138,6 +142,8 @@ function pdf_forms_submissions_overview() {
     ->join('users', 'u', 'u.uid = s.uid');
   $query->fields('u', array('name'))
     ->join('pdf_forms_type', 't', 't.bundle = s.bundle');
+  $query->fields('f', array('uri'))
+    ->join('file_managed', 'f', 'f.fid = s.fid');		
   $query->fields('t', array('label'));
   $query->extend('TableSort')->orderByHeader($header);
   $query->extend('PagerDefault')->limit(20);
@@ -149,25 +155,49 @@ function pdf_forms_submissions_overview() {
       $row->label,
       $row->name,
       format_date($row->created),
-      l('view submission', "pdf_form_submission/{$row->submission_id}/view"),
+			l('edit submission', "pdf_form/submissions/{$row->submission_id}/edit"),
+			l('view submission', file_create_url($row->uri)),
     );
   }
 
   return theme('table', array('header' => $header, 'rows' => $rows, 'empty' => t('No submissions in database.'))) . theme('pager');
 }
 
-function pdf_forms_type_submission_edit($form, &$form_state, $bunlde, $sid) {
-	//dvm($bunlde);
-	//dvm($sid);
+function pdf_forms_type_submission_edit($form, &$form_state, $sid) {
+
 	$submission = pdf_form_load($sid);
+  $map = array();
+  $results = db_query('SELECT machine_name, type, fieldinfo FROM {pdf_forms_field_mapping} WHERE bundle = :bundle', array( ':bundle' => $submission->bundle)); 
+  foreach($results as $field_map) {
+		$map[$field_map->machine_name]['type'] = $field_map->type;
+		$map[$field_map->machine_name]['info'] = $field_map->fieldinfo;
+	}
+		
 	$pdfdata=unserialize($submission->pdfdata);
-	//dvm($pdfdata);
+	
+	$file = file_load($submission->fid);
+	module_load_include('inc', 'pdf_forms', 'includes/pdf_forms.pdftk');
+	
 	foreach($pdfdata as $fname => $fvalue){
-		$form[$fname] = array(
-			'#type'=>'textfield',
-			'#title'=>$fname,		
-			'#value' => $fvalue,
-		);
+		if($map[$fname]['type'] == "Button"){
+			$form[$fname]['#type'] = "checkbox";
+		}
+		elseif($map[$fname]['type'] == "Radio"){
+			$form[$fname]['#type'] = "radios";
+			$options = unserialize($map[$fname]['info']);
+			foreach($options as $option){
+				$vars[$option] = $option;
+			}
+			$form[$fname]['#options'] = $vars;
+			
+		}
+		else{
+			$form[$fname]['#type'] = "textfield";
+		}
+		
+		$form[$fname]['#title'] = $fname;
+		$form[$fname]['#default_value'] = $fvalue;
+
 	}
   $form['submit_button'] = array(
     '#type' => 'submit',
@@ -178,8 +208,15 @@ function pdf_forms_type_submission_edit($form, &$form_state, $bunlde, $sid) {
 }
 
 function pdf_forms_type_submission_edit_submit($form, &$form_state) {
-	$values = serialize($form_state['input']);
-	$submission = pdf_form_load($form_state['build_info']['args'][1]);
+	unset($form_state['values']['form_id'], $form_state['values']['form_token'], $form_state['values']['form_build_id'], $form_state['values']['op'], $form_state['values']['submit_button']);
+
+	$submission = pdf_form_load($form_state['build_info']['args'][0]);
+	
+	$values = serialize($form_state['values']);
 	$submission->pdfdata = $values;
 	pdf_form_save($submission);
+	$data = _pdftk_prepare_datatypes($submission->bundle, $form_state['values']);
+	
+	$file = pdftk_generate_completed_form($submission, $data);
+
 }
