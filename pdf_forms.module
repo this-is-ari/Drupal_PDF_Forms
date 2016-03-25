@@ -128,10 +128,10 @@ function pdf_forms_menu() {
     'file' => 'includes/pdf_forms.entity.inc'
   );
 	
-  $items['pdf_form/%/submissions/%/edit'] = array(
+  $items['pdf_form/submissions/%/edit'] = array(
     'title' => t('Submission'),
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('pdf_forms_type_submission_edit', 1, 3),
+    'page arguments' => array('pdf_forms_type_submission_edit', 2),
     'access callback' => 'pdf_forms_type_access',
     'access arguments' => array('view', 1),
     'file' => 'includes/pdf_forms.pages.inc'

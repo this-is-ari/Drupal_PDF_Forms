@@ -239,6 +239,8 @@ function pdf_forms_rules_action_save_submission($bundle, $data_entities) {
 
   module_load_include('inc', 'pdf_forms', 'includes/pdf_forms.pdftk');
 
+	//dvm(pdftk_prepare_submission_data($entity, $data_entities));
+	
   $file = pdftk_create_completed_form($entity, $data_entities);
   $entity->fid = $file->fid;
 	$entity->pdfdata = serialize($file->pdfdata);
