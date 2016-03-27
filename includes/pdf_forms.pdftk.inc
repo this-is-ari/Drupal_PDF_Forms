@@ -52,7 +52,7 @@ function pdf_forms_fields( $file = NULL) {
   $pdf_file = drupal_realpath($file->uri);
   $command = '{$pdftk} ' . escapeshellarg($pdf_file) . ' dump_data_fields';
   exec($command, $data, $status);
-drupal_set_message($command);	
+
   if (count($data) == 0) {
     watchdog('pdf_forms', 'Could not locate form fields in PDF: %file.', array( '%file' => $pdf_file ), WATCHDOG_WARNING);
   }
@@ -215,7 +215,7 @@ function pdftk_create_completed_form($entity, $data_entities = NULL, $template =
     . ' fill_form '
     . escapeshellarg(drupal_realpath($xfdffile->uri))
     . ' output - flatten drop_xfa';
-drupal_set_message($command);
+
   ob_start();
   passthru($command);
   $response = ob_get_clean();
