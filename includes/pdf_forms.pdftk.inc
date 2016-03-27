@@ -50,7 +50,7 @@ function pdf_forms_fields( $file = NULL) {
   $data = array();
   $status = NULL;
   $pdf_file = drupal_realpath($file->uri);
-  $command = "{$pdftk} " . escapeshellarg($pdf_file) . " dump_data_fields";
+  $command = '{$pdftk} "' . escapeshellarg($pdf_file) . '" dump_data_fields';
   exec($command, $data, $status);
 	
   if (count($data) == 0) {
@@ -210,11 +210,11 @@ function pdftk_create_completed_form($entity, $data_entities = NULL, $template =
 
   // Start shell command
 
-  $command = $pdftk . " "
+  $command = $pdftk . ' "'
     . drupal_realpath($template->uri)
-    . ' fill_form '
+    . '" fill_form "'
     . drupal_realpath($xfdffile->uri)
-    . ' output - flatten drop_xfa';
+    . '" output - flatten drop_xfa';
 
   ob_start();
   passthru($command);
