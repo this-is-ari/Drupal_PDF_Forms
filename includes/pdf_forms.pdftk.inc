@@ -50,7 +50,7 @@ function pdf_forms_fields( $file = NULL) {
   $data = array();
   $status = NULL;
   $pdf_file = drupal_realpath($file->uri);
-  $command = '{$pdftk} ' . escapeshellarg($pdf_file) . ' dump_data_fields';
+  $command = $pdftk . ' ' . escapeshellarg($pdf_file) . ' dump_data_fields';
   exec($command, $data, $status);
 
   if (count($data) == 0) {
