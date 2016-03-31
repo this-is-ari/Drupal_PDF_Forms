@@ -164,59 +164,107 @@ function pdf_forms_submissions_overview() {
 }
 
 function pdf_forms_type_submission_edit($form, &$form_state, $sid) {
-
-	$submission = pdf_form_load($sid);
-  $map = array();
-  $results = db_query('SELECT machine_name, type, fieldinfo FROM {pdf_forms_field_mapping} WHERE bundle = :bundle', array( ':bundle' => $submission->bundle)); 
-  foreach($results as $field_map) {
-		$map[$field_map->machine_name]['type'] = $field_map->type;
-		$map[$field_map->machine_name]['info'] = $field_map->fieldinfo;
-	}
-		
-	$pdfdata=unserialize($submission->pdfdata);
-	
-	$file = file_load($submission->fid);
-	module_load_include('inc', 'pdf_forms', 'includes/pdf_forms.pdftk');
-	
-	foreach($pdfdata as $fname => $fvalue){
-		if($map[$fname]['type'] == "Button"){
-			$form[$fname]['#type'] = "checkbox";
+  if(!isset($form_state['storage']['confirm'])) {
+		$submission = pdf_form_load($sid);
+		$map = array();
+		$results = db_query('SELECT machine_name, type, fieldinfo FROM {pdf_forms_field_mapping} WHERE bundle = :bundle', array( ':bundle' => $submission->bundle)); 
+		foreach($results as $field_map) {
+			$map[$field_map->machine_name]['type'] = $field_map->type;
+			$map[$field_map->machine_name]['info'] = $field_map->fieldinfo;
 		}
-		elseif($map[$fname]['type'] == "Radio"){
-			$form[$fname]['#type'] = "radios";
-			$options = unserialize($map[$fname]['info']);
-			foreach($options as $option){
-				$vars[$option] = $option;
-			}
-			$form[$fname]['#options'] = $vars;
 			
+		$pdfdata=unserialize($submission->pdfdata);
+		
+		$file = file_load($submission->fid);
+		module_load_include('inc', 'pdf_forms', 'includes/pdf_forms.pdftk');
+		if(count($pdfdata)){
+			foreach($pdfdata as $fname => $fvalue){
+				if($map[$fname]['type'] == "Button"){
+					$form[$fname]['#type'] = "checkbox";
+				}
+				elseif($map[$fname]['type'] == "Radio"){
+					$form[$fname]['#type'] = "radios";
+					$options = unserialize($map[$fname]['info']);
+					foreach($options as $option){
+						$vars[$option] = $option;
+					}
+					$form[$fname]['#options'] = $vars;
+					
+				}
+				else{
+					$form[$fname]['#type'] = "textfield";
+				}
+				
+				$form[$fname]['#title'] = $fname;
+				$form[$fname]['#default_value'] = $fvalue;
+
+			}
 		}
 		else{
-			$form[$fname]['#type'] = "textfield";
+			$form['nofields'] = array(
+				'#markup' => '<p>No fields found for this submission</p>'
+			);
 		}
+		$form['submit_button'] = array(
+			'#type' => 'submit',
+			'#value' => t('Save'),
+		);
+		$form['delete_button'] = array(
+			'#type' => 'submit',
+			'#value' => t('Delete'),
+		);	
 		
-		$form[$fname]['#title'] = $fname;
-		$form[$fname]['#default_value'] = $fvalue;
-
+		return $form;
 	}
-  $form['submit_button'] = array(
-    '#type' => 'submit',
-    '#value' => t('Save'),
-  );
-  
-  return $form;
+	else{
+		return confirm_form($form, "Are you sure you want to delete submission?", current_path());	
+	}
+}
+
+function pdf_forms_type_submission_edit_validate($form, &$form_state) {
+	if($form_state['clicked_button']['#value']=='Delete' && !isset($form_state['storage']['confirm'])) {  
+	}
 }
 
 function pdf_forms_type_submission_edit_submit($form, &$form_state) {
-	unset($form_state['values']['form_id'], $form_state['values']['form_token'], $form_state['values']['form_build_id'], $form_state['values']['op'], $form_state['values']['submit_button']);
 
-	$submission = pdf_form_load($form_state['build_info']['args'][0]);
-	
-	$values = serialize($form_state['values']);
-	$submission->pdfdata = $values;
-	pdf_form_save($submission);
-	$data = _pdftk_prepare_datatypes($submission->bundle, $form_state['values']);
-	
-	$file = pdftk_generate_completed_form($submission, $data);
+	if($form_state['clicked_button']['#value']=='Save'){	
+		unset($form_state['values']['form_id'], $form_state['values']['form_token'], $form_state['values']['form_build_id'], $form_state['values']['op'], $form_state['values']['submit_button'], $form_state['values']['delete_button']);
 
+		$submission = pdf_form_load($form_state['build_info']['args'][0]);
+		
+		$values = serialize($form_state['values']);
+		$submission->pdfdata = $values;
+		pdf_form_save($submission);
+		$data = _pdftk_prepare_datatypes($submission->bundle, $form_state['values']);
+		
+		$file = pdftk_generate_completed_form($submission, $data);
+	}
+	elseif($form_state['clicked_button']['#value']=='Delete'){	
+		 if(!isset($form_state['storage']['confirm'])) {
+			$form_state['storage']['confirm'] = TRUE;
+			$form_state['rebuild'] = TRUE;
+		 }
+	}
+	elseif($form_state['clicked_button']['#value']=='Confirm'){	
+		$submission = pdf_form_load($form_state['build_info']['args'][0]);
+		entity_get_controller('pdf_form')->delete($submission);
+		drupal_goto('admin/content/form_submissions');
+	}	
+}
+
+function pdf_forms_type_delete_form($form, &$form_state, $type){
+	$form = confirm_form($form,
+		'Are you sure you want to delete PDF form and all submissions?',
+		'admin/content/pdf_forms/'.$type,
+		'The action cannot be undone.',
+		'Delete',
+		'Cancel'
+	);
+	return $form;	
+}
+
+function pdf_forms_type_delete_form_submit($form, &$form_state){
+	$type = $form_state['build_info']['args'][0];
+  pdf_forms_type_delete($type);
 }

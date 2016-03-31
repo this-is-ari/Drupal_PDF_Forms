@@ -245,7 +245,7 @@ function pdf_forms_type_edit($form, &$form_state, $pdf_form_type = NULL) {
     }
     else {
       // notify user no fields were found in the form.
-      $form['file']['fields']['table'] = array(
+      $form['fields']['table'] = array(
         '#type' => 'markup',
         '#markup' => t('No PDF Form fields were found in this PDF.')
       );
@@ -273,7 +273,7 @@ function pdf_forms_type_edit_submit($form, &$form_state) {
   $pdf_form_type->label = $values['label'];
   $pdf_form_type->status = $values['status'];
   $pdf_form_type->description = $values['description'];
-  $pdf_form_type->filename = $values['filename'];
+  $pdf_form_type->filename = (strlen($values['filename'])) ? $values['filename'] : $pdf_form_type->bundle;
   $primary_keys = array ();
 
   // Let's deal with the file
@@ -303,24 +303,25 @@ function pdf_forms_type_edit_submit($form, &$form_state) {
 
   /* Field mappings */
   $new_record = db_query('SELECT COUNT(*) FROM {pdf_forms_field_mapping} WHERE bundle = :bundle', array(':bundle' => $pdf_form_type->bundle))->fetchField();
-
-  foreach($form_state['input']['fields']['table'] as $machine_name => $field) {
-	  $data = array(
-      'bundle' => $pdf_form_type->bundle,
-      'machine_name' =>   $machine_name,
-      'name' =>   $machine_name,
-      'prefix' => $field['prefix'],
-      'value' =>  $field['value'],
-      'suffix' => $field['suffix'],
-			'type' => $field['type'],
-			'fieldinfo' => $field['fieldinfo']
-    );
-
-    // Check if this is a new record
-    $primary_keys = ($new_record > 0) ? array('bundle', 'machine_name') : array();
-    $result = drupal_write_record('pdf_forms_field_mapping', $data, $primary_keys);
-  }
-
+	$data = array();
+	if(isset($form_state['input']['fields'])){
+		foreach($form_state['input']['fields']['table'] as $machine_name => $field) {
+			$data = array(
+				'bundle' => $pdf_form_type->bundle,
+				'machine_name' =>   $machine_name,
+				'name' =>   $machine_name,
+				'prefix' => $field['prefix'],
+				'value' =>  $field['value'],
+				'suffix' => $field['suffix'],
+				'type' => $field['type'],
+				'fieldinfo' => $field['fieldinfo']
+			);
+		
+			// Check if this is a new record
+			$primary_keys = ($new_record > 0) ? array('bundle', 'machine_name') : array();
+			$result = drupal_write_record('pdf_forms_field_mapping', $data, $primary_keys);
+		}
+	}
   if ($new_bundle == TRUE ) {
     menu_rebuild();
     drupal_set_message(t("New PDF Form Created"));
@@ -331,7 +332,34 @@ function pdf_forms_type_edit_submit($form, &$form_state) {
   }
 }
 
+/**
+* PDF Form Type delete function.
+*/
+function pdf_forms_type_delete($type){
+	$submissions = db_select('pdf_forms_data', 'd')
+		->fields('d', array('submission_id'))
+		->condition('d.bundle', $type)
+		->execute()
+		->fetchAll();		
+		
+	$entities = array();	
+	foreach($submissions as $submission){
+		$entities[] = $submission->submission_id;
+	}
+	if(count($entities)){
+		$entities = pdf_form_load_multiple($entities);
+		entity_get_controller('pdf_form')->deleteMultiple($entities);
+	}		
+		db_delete('pdf_forms_type')
+			->condition('bundle', $type)
+			->execute();	
+			
+		db_delete('pdf_forms_field_mapping')
+			->condition('bundle', $type)
+			->execute();		
 
+	drupal_goto('admin/content/pdf_forms');
+}
 
 /**
 * Implements the uri callback.
