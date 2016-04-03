@@ -50,9 +50,9 @@ function pdf_forms_fields( $file = NULL) {
   $data = array();
   $status = NULL;
   $pdf_file = drupal_realpath($file->uri);
-  $command = $pdftk . ' ' . escapeshellarg($pdf_file) . ' dump_data_fields';
+  $command = "{$pdftk} " . escapeshellarg($pdf_file) . " dump_data_fields";
   exec($command, $data, $status);
-
+	
   if (count($data) == 0) {
     watchdog('pdf_forms', 'Could not locate form fields in PDF: %file.', array( '%file' => $pdf_file ), WATCHDOG_WARNING);
   }
@@ -116,6 +116,7 @@ function pdf_forms_fields( $file = NULL) {
 			$index++;
 		}
   }
+	if(!count($fields)) return FALSE;
   return $fields;
 }
 
@@ -171,7 +172,7 @@ function pdftk_create_completed_form($entity, $data_entities = NULL, $template =
     $template_fid = db_query('SELECT fid FROM {pdf_forms_type} WHERE bundle = :bundle', array(':bundle' => $entity->bundle))->fetchField();
     $template = file_load($template_fid);
   }
-
+dvm($entity->bundle);
   $token_objects = array();
 
   $account = user_load($entity->uid);
@@ -188,43 +189,48 @@ function pdftk_create_completed_form($entity, $data_entities = NULL, $template =
   // Load up the field map data.
   $map = array();
   $map = pdftk_get_field_map($entity, $token_objects);
-	$map = _pdftk_prepare_datatypes($entity->bundle, $map);
+	if(count($map)){
+		$map = _pdftk_prepare_datatypes($entity->bundle, $map);
 
-  // Create the xfdf
-  module_load_include('inc', 'pdf_forms', 'includes/pdf_forms.xfdf');
+		// Create the xfdf
+		module_load_include('inc', 'pdf_forms', 'includes/pdf_forms.xfdf');
 
-  $filename_raw = db_query('SELECT filename FROM {pdf_forms_type} WHERE bundle = :bundle', array(':bundle' => $entity->bundle))->fetchField();
-  $filename = token_replace($filename_raw, $token_objects);
-	
-  $file_schema = file_default_scheme();
-  $destination =  "{$file_schema}://{$filename}";
+		$filename_raw = db_query('SELECT filename FROM {pdf_forms_type} WHERE bundle = :bundle', array(':bundle' => $entity->bundle))->fetchField();
+		$filename = token_replace($filename_raw, $token_objects);
+		
+		$file_schema = file_default_scheme();
+		$destination =  "{$file_schema}://{$filename}";
 
-  $XFDF = pdf_forms_generate_xfdf("{$filename}.pdf.xfdf", $map, 'UTF-8');
+		$XFDF = pdf_forms_generate_xfdf("{$filename}.pdf.xfdf", $map, 'UTF-8');
 
-  // Store data to a file.
-  $xfdffile = file_save_data($XFDF, "{$destination}.pdf.xfdf", FILE_EXISTS_REPLACE);
-	
-  file_usage_add($xfdffile, 'pdf_forms', $entity->bundle, $entity->submission_id);
+		// Store data to a file.
+		$xfdffile = file_save_data($XFDF, "{$destination}.pdf.xfdf", FILE_EXISTS_REPLACE);
+		
+		file_usage_add($xfdffile, 'pdf_forms', $entity->bundle, $entity->submission_id);
 
-  $pdftk = variable_get('pdf_forms_pdftk_path', 'pdftk');
+		$pdftk = variable_get('pdf_forms_pdftk_path', 'pdftk');
 
-  // Start shell command
+		// Start shell command
 
-  $command = $pdftk . ' '
-    . escapeshellarg(drupal_realpath($template->uri))
-    . ' fill_form '
-    . escapeshellarg(drupal_realpath($xfdffile->uri))
-    . ' output - flatten drop_xfa';
+		$command = $pdftk . " "
+			. drupal_realpath($template->uri)
+			. ' fill_form '
+			. drupal_realpath($xfdffile->uri)
+			. ' output - flatten drop_xfa';
 
-  ob_start();
-  passthru($command);
-  $response = ob_get_clean();
-	
-  $file = file_save_data($response, "{$destination}.pdf", FILE_EXISTS_REPLACE);
-  file_usage_add($file, 'pdf_forms', $entity->bundle, $entity->submission_id);
-	$file->pdfdata=$map; 
-  module_invoke_all('pdf_forms_generate', $file);
-
+		ob_start();
+		passthru($command);
+		$response = ob_get_clean();
+		
+		$file = file_save_data($response, "{$destination}.pdf", FILE_EXISTS_RENAME);
+		file_usage_add($file, 'pdf_forms', $entity->bundle, $entity->submission_id);
+		$file->pdfdata=$map; 
+		module_invoke_all('pdf_forms_generate', $file);
+	}
+	else{
+		$file = file_load($template_fid);
+		$file->pdfdata = array();
+	}
   return $file;
 }
 

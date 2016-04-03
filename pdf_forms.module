@@ -72,7 +72,7 @@ function pdf_forms_menu() {
   foreach($types as $type) {
     $items['admin/content/pdf_forms/' . $type] = array(
       'title callback' => 'pdf_forms_type_title',
-      'title arguments' => array(1),
+      'title arguments' => array(3),
       'page callback' => 'drupal_get_form',
       'page arguments' => array('pdf_forms_type_edit', 3),
       'access arguments' => array('manage pdf_forms'),
@@ -89,8 +89,15 @@ function pdf_forms_menu() {
       'type' => MENU_DEFAULT_LOCAL_TASK,
       'file' => 'includes/pdf_forms.entity.inc'
     );
+		$items['admin/content/pdf_forms/' . $type . '/delete'] = array(
+			'title' => t('Delete'),
+			'page callback' => 'drupal_get_form',
+			'page arguments' => array('pdf_forms_type_delete_form', 3),
+			'access arguments' => array('manage pdf_forms'),
+			'type' => MENU_LOCAL_TASK,
+			'file' => 'includes/pdf_forms.pages.inc'
+		);			
   }
-
 
   $items['admin/content/pdf_forms/create'] = array(
     'title' => t('Create PDF Form'),
@@ -99,6 +106,8 @@ function pdf_forms_menu() {
     'type' => MENU_LOCAL_ACTION,
     'file' => 'includes/pdf_forms.entity.inc'
   );
+	
+
 
   $items['admin/content/form_submissions'] = array(
     'title' => t('PDF Form Submissions'),
