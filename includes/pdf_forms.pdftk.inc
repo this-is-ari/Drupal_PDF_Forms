@@ -50,7 +50,7 @@ function pdf_forms_fields( $file = NULL) {
   $data = array();
   $status = NULL;
   $pdf_file = drupal_realpath($file->uri);
-  $command = "{$pdftk} " . escapeshellarg($pdf_file) . " dump_data_fields";
+  $command = $pdftk . ' ' . escapeshellarg($pdf_file) . ' dump_data_fields';
   exec($command, $data, $status);
 	
   if (count($data) == 0) {
@@ -212,11 +212,11 @@ dvm($entity->bundle);
 
 		// Start shell command
 
-		$command = $pdftk . " "
-			. drupal_realpath($template->uri)
-			. ' fill_form '
-			. drupal_realpath($xfdffile->uri)
-			. ' output - flatten drop_xfa';
+		$command = $pdftk . ' '
+     			. escapeshellarg(drupal_realpath($template->uri))
+     			. ' fill_form '
+     			. escapeshellarg(drupal_realpath($xfdffile->uri))
+     			. ' output - flatten drop_xfa';
 
 		ob_start();
 		passthru($command);
