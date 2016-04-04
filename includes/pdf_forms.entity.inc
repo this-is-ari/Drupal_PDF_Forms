@@ -407,24 +407,54 @@ function pdf_forms_view($entity, $view_mode = 'full') {
 * Callback for creating a new Form Submission.
 */
 function pdf_forms_create($bundle) {
-  $entity = entity_get_controller('pdf_form')->create($bundle);
-  return drupal_get_form('pdf_forms_edit', $entity);
+	module_load_include('inc', 'pdf_forms', 'includes/pdf_forms.pdftk');
+  //$entity = entity_get_controller('pdf_form')->create($bundle);
+  return drupal_get_form('pdf_forms_edit', $bundle);
 }
 
 /**
 * Form for editing/creating a form submission.
 */
-function pdf_forms_edit($form, &$form_state, $entity = NULL) {
+function pdf_forms_edit($form, &$form_state, $bundle = NULL) {
 
-  $form['entity'] = array(
-    '#type' => 'value',
-    '#value' => $entity
-  );
+	$form_state['bundle'] = $bundle;
+	$map = array();
+	$results = db_query('SELECT machine_name, type, fieldinfo FROM {pdf_forms_field_mapping} WHERE bundle = :bundle', array( ':bundle' => $bundle)); 
+	foreach($results as $field_map) {
+		$map[$field_map->machine_name]['type'] = $field_map->type;
+		$map[$field_map->machine_name]['info'] = $field_map->fieldinfo;
+	}	
 
-  field_attach_form('pdf_form', $entity, $form, $form_state);
+		if(count($map)){
+			foreach($map as $fname => $fvalue){
+				if($map[$fname]['type'] == "Button"){
+					$form[$fname]['#type'] = "checkbox";
+				}
+				elseif($map[$fname]['type'] == "Radio"){
+					$form[$fname]['#type'] = "radios";
+					$options = unserialize($map[$fname]['info']);
+					foreach($options as $option){
+						$vars[$option] = $option;
+					}
+					$form[$fname]['#options'] = $vars;
+					
+				}
+				else{
+					$form[$fname]['#type'] = "textfield";
+				}
+				
+				$form[$fname]['#title'] = $fname;
+				//$form[$fname]['#default_value'] = $fvalue;
 
+			}
+		}
+		else{
+			$form['nofields'] = array(
+				'#markup' => '<p>No fields found for this submission</p>'
+			);
+		}
 
-  $form['save'] = array(
+  $form['submit_button'] = array(
     '#type' => 'submit',
     '#value' => t('Save'),
     '#weight' => 500
@@ -432,17 +462,24 @@ function pdf_forms_edit($form, &$form_state, $entity = NULL) {
   return $form;
 }
 
-function pdf_forms_edit_validate($form, &$form_state) {
-  field_attach_form_validate('pdf_form', $form_state['values']['entity'], $form, $form_state);
-}
-
 function pdf_forms_edit_submit($form, &$form_state) {
-  $entity = $form_state['values']['entity'];
+
+	unset($form_state['values']['form_id'], $form_state['values']['form_token'], $form_state['values']['form_build_id'], $form_state['values']['op'], $form_state['values']['submit_button'], $form_state['values']['delete_button']);
+
+	$submission = entity_get_controller('pdf_form')->create($form_state['bundle']);	
   global $user;
-  $entity->uid = $user->uid;
-  field_attach_submit('pdf_form', $entity, $form, $form_state);
-  $entity = pdf_form_save($entity);
-  $form_state['redirect'] = "pdf_form_submission/{$entity->submission_id}";
+  $submission->uid = $user->uid;	
+	$data = _pdftk_prepare_datatypes($submission->bundle, $form_state['values']);
+	$file = pdftk_generate_completed_form($submission, $data);
+	$values = serialize($form_state['values']);
+	$submission->pdfdata = $values;
+	$submission->fid = $file->fid;
+	pdf_form_save($submission);
+	
+	
+	
+
+  $form_state['redirect'] = "pdf_form/submissions/{$submission->submission_id}/edit";
 }
 
 /**

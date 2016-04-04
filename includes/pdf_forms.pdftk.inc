@@ -172,7 +172,7 @@ function pdftk_create_completed_form($entity, $data_entities = NULL, $template =
     $template_fid = db_query('SELECT fid FROM {pdf_forms_type} WHERE bundle = :bundle', array(':bundle' => $entity->bundle))->fetchField();
     $template = file_load($template_fid);
   }
-dvm($entity->bundle);
+
   $token_objects = array();
 
   $account = user_load($entity->uid);
