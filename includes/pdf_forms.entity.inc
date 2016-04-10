@@ -236,6 +236,7 @@ function pdf_forms_type_edit($form, &$form_state, $pdf_form_type = NULL) {
       $form['fields']['token_tree'] = array(
         '#theme' => 'token_tree',
         '#token_types' => $token_types,
+				'#dialog' => TRUE,
       );
 
 
