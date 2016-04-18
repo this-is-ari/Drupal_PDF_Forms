@@ -120,7 +120,7 @@ function pdf_forms_fields($file = NULL) {
 /**
  * Generate data from data entity for submission.
  */
-function pdftk_prepare_submission_data($entity, $data_entities = NULL) {
+function pdf_forms_pdftk_prepare_submission_data($entity, $data_entities = NULL) {
   // Load up any entities that are being passed.
   if (!is_null($data_entities)) {
     foreach ($data_entities as $data_entity) {
@@ -130,7 +130,7 @@ function pdftk_prepare_submission_data($entity, $data_entities = NULL) {
 
   // Load up the field map data.
   $map = array();
-  $map = pdftk_get_field_map($entity, $token_objects);
+  $map = pdf_forms_pdftk_get_field_map($entity, $token_objects);
 
   return $map;
 }
@@ -138,7 +138,7 @@ function pdftk_prepare_submission_data($entity, $data_entities = NULL) {
 /**
  * Prepare data arrray for PDF population.
  */
-function _pdftk_prepare_datatypes($bundle, $values) {
+function pdf_forms_pdftk_prepare_datatypes($bundle, $values) {
   $results = db_query('SELECT machine_name, type FROM {pdf_forms_field_mapping} WHERE bundle = :bundle', array(':bundle' => $bundle));
   foreach ($results as $field_map) {
     $map[$field_map->machine_name] = $field_map->type;
@@ -160,7 +160,7 @@ function _pdftk_prepare_datatypes($bundle, $values) {
  *
  * @return the File object.
  */
-function pdftk_create_completed_form($entity, $data_entities = NULL, $template = FALSE) {
+function pdf_forms_pdftk_create_completed_form($entity, $data_entities = NULL, $template = FALSE) {
 
   $save_path = variable_get('pdf_form_save_path', 'public://');
   // Load up the template.
@@ -184,9 +184,9 @@ function pdftk_create_completed_form($entity, $data_entities = NULL, $template =
 
   // Load up the field map data.
   $map = array();
-  $map = pdftk_get_field_map($entity, $token_objects);
+  $map = pdf_forms_pdftk_get_field_map($entity, $token_objects);
   if (count($map)) {
-    $map = _pdftk_prepare_datatypes($entity->bundle, $map);
+    $map = pdf_forms_pdftk_prepare_datatypes($entity->bundle, $map);
 
     // Create the xfdf.
     module_load_include('inc', 'pdf_forms', 'includes/pdf_forms.xfdf');
@@ -232,7 +232,7 @@ function pdftk_create_completed_form($entity, $data_entities = NULL, $template =
 /**
  *
  */
-function pdftk_generate_completed_form($entity, $data_entities = NULL, $template = FALSE) {
+function pdf_forms_pdftk_generate_completed_form($entity, $data_entities = NULL, $template = FALSE) {
 
   $save_path = variable_get('pdf_form_save_path', 'public://');
   // Load up the template.
@@ -249,7 +249,7 @@ function pdftk_generate_completed_form($entity, $data_entities = NULL, $template
 
   // Load up the field map data.
   $map = array();
-  $map = pdftk_get_field_map($entity, $token_objects);
+  $map = pdf_forms_pdftk_get_field_map($entity, $token_objects);
 
   // Create the xfdf.
   module_load_include('inc', 'pdf_forms', 'includes/pdf_forms.xfdf');
@@ -291,7 +291,7 @@ function pdftk_generate_completed_form($entity, $data_entities = NULL, $template
 /**
  * Returns the field mapping for an entity bundle.
  */
-function pdftk_get_field_map($entity, $token_objects) {
+function pdf_forms_pdftk_get_field_map($entity, $token_objects) {
 
   $map = array();
   $results = db_query('SELECT * FROM {pdf_forms_field_mapping} WHERE bundle = :bundle', array(':bundle' => $entity->bundle));

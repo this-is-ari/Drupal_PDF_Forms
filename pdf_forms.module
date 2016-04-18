@@ -295,16 +295,16 @@ function pdf_forms_access ($op = 'view', $entity = NULL, $account = NULL) {
 /**
  * Load entity.
  */
-function pdf_form_load($submission_id = NULL, $reset = FALSE) {
+function pdf_forms_load($submission_id = NULL, $reset = FALSE) {
   $submission_ids = (isset($submission_id) ? array($submission_id) : array());
-  $pdf_form = pdf_form_load_multiple($submission_ids, array(), $reset);
+  $pdf_form = pdf_forms_load_multiple($submission_ids, array(), $reset);
   return $pdf_form ? reset($pdf_form) : FALSE;
 }
 
 /**
  * Load Multiple entities.
  */
-function pdf_form_load_multiple($submission_ids = FALSE, $conditions = array(), $reset = FALSE) {
+function pdf_forms_load_multiple($submission_ids = FALSE, $conditions = array(), $reset = FALSE) {
   return entity_load('pdf_form', $submission_ids, $conditions, $reset);
 }
 

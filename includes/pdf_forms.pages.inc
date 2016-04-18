@@ -60,7 +60,7 @@ function pdf_forms_admin_settings_submit($form, &$form_state) {
 /**
  * Overview display for the Admin page (Pdf Forms)
  */
-function pdf_form_type_admin_overview() {
+function pdf_forms_type_admin_overview() {
   $header = array(
     array(
       'field' => 'label',
@@ -163,7 +163,7 @@ function pdf_forms_submissions_overview() {
  */
 function pdf_forms_type_submission_edit($form, &$form_state, $sid) {
   if (!isset($form_state['storage']['confirm'])) {
-    $submission = pdf_form_load($sid);
+    $submission = pdf_forms_load($sid);
     $map = array();
     $results = db_query('SELECT machine_name, type, fieldinfo FROM {pdf_forms_field_mapping} WHERE bundle = :bundle', array(':bundle' => $submission->bundle));
     foreach ($results as $field_map) {
@@ -238,14 +238,14 @@ function pdf_forms_type_submission_edit_submit($form, &$form_state) {
   if ($form_state['clicked_button']['#value'] == 'Save') {
     unset($form_state['values']['form_id'], $form_state['values']['form_token'], $form_state['values']['form_build_id'], $form_state['values']['op'], $form_state['values']['submit_button'], $form_state['values']['delete_button']);
 
-    $submission = pdf_form_load($form_state['build_info']['args'][0]);
+    $submission = pdf_forms_load($form_state['build_info']['args'][0]);
 
     $values = serialize($form_state['values']);
     $submission->pdfdata = $values;
-    $data = _pdftk_prepare_datatypes($submission->bundle, $form_state['values']);
-    $file = pdftk_generate_completed_form($submission, $data);
+    $data = pdf_forms_pdftk_prepare_datatypes($submission->bundle, $form_state['values']);
+    $file = pdf_forms_pdftk_generate_completed_form($submission, $data);
     $submission->fid = $file->fid;
-    pdf_form_save($submission);
+    pdf_forms_save($submission);
 
   }
   elseif ($form_state['clicked_button']['#value'] == 'Delete') {
@@ -255,7 +255,7 @@ function pdf_forms_type_submission_edit_submit($form, &$form_state) {
     }
   }
   elseif ($form_state['clicked_button']['#value'] == 'Confirm') {
-    $submission = pdf_form_load($form_state['build_info']['args'][0]);
+    $submission = pdf_forms_load($form_state['build_info']['args'][0]);
     entity_get_controller('pdf_form')->delete($submission);
     drupal_goto('admin/content/form_submissions');
   }

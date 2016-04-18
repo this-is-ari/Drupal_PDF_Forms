@@ -11,7 +11,7 @@ function pdf_forms_type_title($type) {
 /**
  * Helper function to detect if a machine name exsits.
  */
-function pdf_form_type_exists($machine_value) {
+function pdf_forms_type_exists($machine_value) {
   return (db_query('SELECT COUNT(*) FROM {pdf_forms_type} WHERE bundle = :bundle', array(':bundle' => $machine_value))->fetchField() > 0);
 }
 
@@ -54,7 +54,7 @@ function pdf_forms_type_edit($form, &$form_state, $pdf_form_type = NULL) {
       '#required' => TRUE,
       '#default_value' => $pdf_form_type->bundle,
       '#machine_name' => array(
-        'exists' => 'pdf_form_type_exists',
+        'exists' => 'pdf_forms_type_exists',
       ),
     );
   }
@@ -345,7 +345,7 @@ function pdf_forms_type_delete($type) {
     $entities[] = $submission->submission_id;
   }
   if (count($entities)) {
-    $entities = pdf_form_load_multiple($entities);
+    $entities = pdf_forms_load_multiple($entities);
     entity_get_controller('pdf_form')->deleteMultiple($entities);
   }
   db_delete('pdf_forms_type')
@@ -381,9 +381,9 @@ function pdf_forms_view($entity, $view_mode = 'full') {
   // $entity->content += field_attach_view($entity_type, $entity, $view_mode);.
   if (empty($entity->fid)) {
     module_load_include('inc', 'pdf_forms', 'includes/pdf_forms.pdftk');
-    $file = pdftk_create_completed_form($entity);
+    $file = pdf_forms_pdftk_create_completed_form($entity);
     $entity->fid = $file->fid;
-    pdf_form_save($entity);
+    pdf_forms_save($entity);
   }
   $file = file_load($entity->fid);
   $entity->content['pdf'] = array(
@@ -468,12 +468,12 @@ function pdf_forms_edit_submit($form, &$form_state) {
   $submission = entity_get_controller('pdf_form')->create($form_state['bundle']);
   global $user;
   $submission->uid = $user->uid;
-  $data = _pdftk_prepare_datatypes($submission->bundle, $form_state['values']);
-  $file = pdftk_generate_completed_form($submission, $data);
+  $data = pdf_forms_pdftk_prepare_datatypes($submission->bundle, $form_state['values']);
+  $file = pdf_forms_pdftk_generate_completed_form($submission, $data);
   $values = serialize($form_state['values']);
   $submission->pdfdata = $values;
   $submission->fid = $file->fid;
-  pdf_form_save($submission);
+  pdf_forms_save($submission);
 
   $form_state['redirect'] = "pdf_form/submissions/{$submission->submission_id}/edit";
 }
@@ -481,6 +481,6 @@ function pdf_forms_edit_submit($form, &$form_state) {
 /**
  * Save by calling our controller.
  */
-function pdf_form_save($entity) {
+function pdf_forms_save($entity) {
   return entity_get_controller('pdf_form')->save($entity);
 }
