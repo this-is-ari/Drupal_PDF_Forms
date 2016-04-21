@@ -10,7 +10,7 @@ function pdf_forms_schema() {
     'fields' => array(
       'bundle' => array(
         'type' => 'varchar',
-        'not null' => TRUE,
+        'not null' => 'TRUE',
         'length' => 255,
       ),
       'label' => array(
@@ -30,6 +30,9 @@ function pdf_forms_schema() {
         'type' => 'int'
       ),
     ),
+    'unique keys' => array(
+       'bundle' => array('bundle')
+       ),
     'primary key' => array('bundle')
   );
 
@@ -91,7 +94,8 @@ function pdf_forms_schema() {
   $schema['pdf_forms_data'] = array(
     'fields' => array(
       'submission_id' => array(
-        'type' => 'serial'
+        'type' => 'serial',
+        'not null' => TRUE,
       ),
       'uid' => array(
         'type' => 'int',
