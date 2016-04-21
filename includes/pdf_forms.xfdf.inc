@@ -1,8 +1,8 @@
 <?php
 
 /**
-* Generates the XFDF file format data for the PDF.
-*/
+ * Generates the XFDF file format data for the PDF.
+ */
 function pdf_forms_generate_xfdf($file, $map, $encode = 'UTF-8') {
   $data = '<?xml version="1.0" encoding="' . $encode . '"?>' . "\n" .
     '<xfdf xmlns="http://ns.adobe.com/xfdf/" xml:space="preserve">' . "\n" .
@@ -15,7 +15,6 @@ function pdf_forms_generate_xfdf($file, $map, $encode = 'UTF-8') {
     '<ids original="' . md5($file) . '" modified="' . REQUEST_TIME . '" />' . "\n" .
     '<f href="' . $file . '" />' . "\n" .
     '</xfdf>' . "\n";
-
 
   return $data;
 }

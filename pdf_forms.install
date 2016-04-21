@@ -1,8 +1,9 @@
 <?php
 
 /**
-* Implements hook_schema()
-*/
+ * Implements hook_schema()
+ */
+
 function pdf_forms_schema() {
   $schema = array();
 
@@ -17,31 +18,31 @@ function pdf_forms_schema() {
         'length' => 255,
       ),
       'description' => array(
-        'type' => 'text'
+        'type' => 'text',
       ),
       'fid' => array(
-        'type' => 'int'
+        'type' => 'int',
       ),
       'filename' => array(
         'type' => 'text',
       ),
       'status' => array(
-        'type' => 'int'
+        'type' => 'int',
       ),
     ),
-    'primary key' => array('bundle')
+    'primary key' => array('bundle'),
   );
 
   $schema['pdf_forms_field_mapping'] = array(
     'fields' => array(
       'bundle' => array(
         'type' => 'varchar',
-        'length' => 100
+        'length' => 100,
       ),
       'machine_name' => array(
         'type' => 'varchar',
         'binary' => TRUE,
-        'length' => 100
+        'length' => 100,
       ),
       'name' => array(
         'type' => 'varchar',
@@ -49,125 +50,138 @@ function pdf_forms_schema() {
         'length' => 255,
       ),
       'prefix' => array(
-        'type' => 'text'
+        'type' => 'text',
       ),
       'value' => array(
-        'type' => 'text'
+        'type' => 'text',
       ),
       'suffix' => array(
-        'type' => 'text'
+        'type' => 'text',
       ),
       'pdf_page' => array(
-        'type' => 'int'
+        'type' => 'int',
       ),
       'top' => array(
-        'type' => 'int'
+        'type' => 'int',
       ),
       'left' => array(
-        'type' => 'int'
+        'type' => 'int',
       ),
       'height' => array(
-        'type' => 'int'
+        'type' => 'int',
       ),
       'width' => array(
-        'type' => 'int'
+        'type' => 'int',
       ),
       'type' => array(
-        'type' => 'text'
-      ),			
+        'type' => 'text',
+      ),
       'fieldinfo' => array(
-        'type' => 'text'
-      ),				
+        'type' => 'text',
+      ),
     ),
     'unique keys' => array(
       'bundle_field' => array(
         'bundle',
-        'machine_name'
-      )
-    )
+        'machine_name',
+      ),
+    ),
   );
 
   $schema['pdf_forms_data'] = array(
     'fields' => array(
       'submission_id' => array(
-        'type' => 'serial'
+        'type' => 'serial',
       ),
       'uid' => array(
         'type' => 'int',
         'not null' => TRUE,
-        'default' => 0
+        'default' => 0,
       ),
       'created' => array(
         'type' => 'int',
         'not null' => TRUE,
-        'default' => 0
+        'default' => 0,
       ),
       'bundle' => array(
         'type' => 'varchar',
-        'length' => 255
+        'length' => 255,
       ),
       'fid' => array(
-        'type' => 'int'
+        'type' => 'int',
       ),
       'pdfdata' => array(
-				'type' => 'text',
-				'size' => 'big'
-      ),			
+        'type' => 'text',
+        'size' => 'big',
+      ),
     ),
-    'primary key' => array('submission_id')
+    'primary key' => array('submission_id'),
   );
 
   return $schema;
 }
 
 /**
-* Implements hook_enable.
-* - Ensure that we can access the pdftk executable, notify user if we cannot.
-* - Ensure that the default template upload directory exists, notify the user if we cannot create it.
-*/
+ * Implements hook_enable.
+ * - Ensure that we can access the pdftk executable, notify user if we cannot.
+ * - Ensure that the default template upload directory exists, notify the user if we cannot create it.
+ */
 function pdf_forms_enable() {
   $template_path = variable_get('pdf_forms_template_path', 'public://pdf_form_templates');
-  if(!file_prepare_directory($template_path)) {
+  if (!file_prepare_directory($template_path)) {
     drupal_set_message('Could not create %path for uploading PDF Form templates.', array('%path' => $template_path));
   }
 }
 
 /**
-* Run a update hook to add the 'filename' field to the entity type table.
-*/
+ * Run a update hook to add the 'filename' field to the entity type table.
+ */
 function pdf_forms_update_7001() {
   $spec = array(
     'type' => 'text',
   );
-  db_add_field( 'pdf_forms_type', 'filename', $spec);
+  db_add_field('pdf_forms_type', 'filename', $spec);
 }
+
+/**
+ * Add pdfdata field for field additional info
+ */
 function pdf_forms_update_7002() {
   $spec = array(
-		'type' => 'text',
-		'size' => 'big'
+    'type' => 'text',
+    'size' => 'big',
   );
-  db_add_field( 'pdf_forms_data', 'pdfdata', $spec);
+  db_add_field('pdf_forms_data', 'pdfdata', $spec);
 }
+
+/**
+ * Add type field 
+ */
 function pdf_forms_update_7003() {
   $spec = array(
-		'type' => 'text',
+    'type' => 'text',
   );
-  db_add_field( 'pdf_forms_field_mapping', 'type', $spec);
+  db_add_field('pdf_forms_field_mapping', 'type', $spec);
 }
+
+/**
+ * Add fieldinfo field
+ */
 function pdf_forms_update_7004() {
   $spec = array(
-		'type' => 'text',
+    'type' => 'text',
   );
-  db_add_field( 'pdf_forms_field_mapping', 'fieldinfo', $spec);
+  db_add_field('pdf_forms_field_mapping', 'fieldinfo', $spec);
 }
+
 /**
-* Implements hook_requirements
-*/
+ * Implements hook_requirements.
+ */
 function pdf_forms_requirements($phase) {
   $requirements = array();
   $t = get_t();
 
-  switch($phase) {
+  switch ($phase) {
     case 'install':
     case 'runtime':
       $pdftk_path = variable_get('pdf_forms_pdftk_path', 'pdftk');
@@ -180,7 +194,7 @@ function pdf_forms_requirements($phase) {
           'title' => $t('PDFTK'),
           'description' => $t('PDFTK is needed to scan PDF files, but could not be found.'),
           'value' => $pdftk_path,
-          'severity' => REQUIREMENT_WARNING
+          'severity' => REQUIREMENT_WARNING,
         );
       }
       else {
@@ -189,10 +203,10 @@ function pdf_forms_requirements($phase) {
           'title' => $t('PDFTK'),
           'description' => $t('PDFTK is needed to scan PDF files.'),
           'value' => $pdftk_path,
-          'severity' => REQUIREMENT_OK
+          'severity' => REQUIREMENT_OK,
         );
       }
-    break;
+      break;
   }
 
   return $requirements;
