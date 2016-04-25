@@ -99,6 +99,7 @@ function pdf_forms_type_edit($form, &$form_state, $pdf_form_type = NULL) {
   $form['file']['fname_wrapper']['tokens'] = array(
     '#theme' => 'token_tree',
     '#token_types' => $token_types,
+		'#dialog' => TRUE,
   );
 
   $form['file']['fid'] = array(
