@@ -53,7 +53,7 @@ function pdf_forms_menu() {
 
   $items['admin/content/pdf_forms'] = array(
     'title' => t('PDF Forms'),
-    'page callback' => 'pdf_form_type_admin_overview',
+    'page callback' => 'pdf_forms_type_admin_overview',
     'access arguments' => array('manage pdf_forms'),
     'type' => MENU_LOCAL_TASK,
     'file' => 'includes/pdf_forms.pages.inc',
@@ -61,7 +61,7 @@ function pdf_forms_menu() {
 
   $items['admin/content/pdf_forms/list'] = array(
     'title' => t('PDF Forms'),
-    'page callback' => 'pdf_form_type_admin_overview',
+    'page callback' => 'pdf_forms_type_admin_overview',
     'access arguments' => array('manage pdf_forms'),
     'type' => MENU_DEFAULT_LOCAL_TASK,
     'file' => 'includes/pdf_forms.pages.inc',
