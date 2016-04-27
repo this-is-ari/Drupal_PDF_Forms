@@ -289,7 +289,10 @@ function pdf_forms_type_edit_submit($form, &$form_state) {
       if ($old_file) {
         file_usage_delete($old_file, 'pdf_forms', $pdf_form_type->bundle, 0);
         file_delete($old_file);
-        /* @TODO: Delete the mappings from pdf_form_field table */
+				db_delete('pdf_forms_field_mapping')
+					->condition('bundle', $pdf_form_type->bundle)
+					->execute();   
+				unset($form_state['input']['fields']);
       }
     }
     $file = file_load($values['fid']);
