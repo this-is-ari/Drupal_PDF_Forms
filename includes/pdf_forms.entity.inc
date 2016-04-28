@@ -477,8 +477,9 @@ function pdf_forms_edit_submit($form, &$form_state) {
   $values = serialize($form_state['values']);
   $submission->pdfdata = $values;
   $submission->fid = $file->fid;
-  pdf_forms_save($submission);
-
+  $save_result = pdf_forms_save($submission);
+  //@TODO - check if saved properly, only display message if it is
+  drupal_set_message(t('Submission '.$save_result->submission_id.' for '.$save_result->bundle. ' saved.'));
   $form_state['redirect'] = "pdf_form/submissions/{$submission->submission_id}/edit";
 }
 
