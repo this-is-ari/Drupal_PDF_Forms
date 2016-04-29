@@ -271,11 +271,11 @@ function pdf_forms_pdftk_generate_completed_form($entity, $data_entities = NULL,
   $pdftk = variable_get('pdf_forms_pdftk_path', 'pdftk');
 
   // Start shell command.
-  $command = $pdftk . ' "'
-    . drupal_realpath($template->uri)
-    . '" fill_form "'
-    . drupal_realpath($xfdffile->uri)
-    . '" output - flatten drop_xfa';
+  $command = $pdftk . ' '
+    . escapeshellarg(drupal_realpath($template->uri))
+    . ' fill_form '
+    . escapeshellarg(drupal_realpath($xfdffile->uri))
+    . ' output - flatten drop_xfa';
 
   ob_start();
   passthru($command);
