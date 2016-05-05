@@ -186,6 +186,7 @@ function pdf_forms_type_submission_edit($form, &$form_state, $sid) {
           if (!in_array($fvalue, $options)) {
             $fvalue = NULL;
           }
+					$vars = array();
           foreach ($options as $option) {
             $vars[$option] = $option;
           }
