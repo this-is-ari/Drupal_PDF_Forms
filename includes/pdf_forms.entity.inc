@@ -417,7 +417,6 @@ function pdf_forms_create($bundle) {
  * Form for editing/creating a form submission.
  */
 function pdf_forms_edit($form, &$form_state, $bundle = NULL) {
-
   $form_state['bundle'] = $bundle;
   $map = array();
   $results = db_query('SELECT machine_name, type, fieldinfo FROM {pdf_forms_field_mapping} WHERE bundle = :bundle', array(':bundle' => $bundle));
@@ -434,6 +433,7 @@ function pdf_forms_edit($form, &$form_state, $bundle = NULL) {
       elseif ($map[$fname]['type'] == "Radio") {
         $form[$fname]['#type'] = "radios";
         $options = unserialize($map[$fname]['info']);
+				$vars = array();
         foreach ($options as $option) {
           $vars[$option] = $option;
         }
