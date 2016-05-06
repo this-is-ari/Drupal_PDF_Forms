@@ -140,7 +140,7 @@ function pdf_forms_menu() {
     'page callback' => 'drupal_get_form',
     'page arguments' => array('pdf_forms_type_submission_edit', 2),
     'access callback' => 'pdf_forms_type_access',
-    'access arguments' => array('view', 1),
+    'access arguments' => array('view', 2),
     'file' => 'includes/pdf_forms.pages.inc',
   );
 
@@ -261,7 +261,7 @@ function _pdf_forms_get_bundles() {
 function pdf_forms_type_access ($op = 'view', $entity = NULL, $account = NULL) {
   global $user;
   $account = ($account == NULL) ? $user : $account;
-
+	$entity = pdf_forms_load($entity);
   switch ($op) {
     case 'view':
       return (user_access('view any submission', $account) || ($user->uid == $entity->uid && user_access('view own submission', $entity)));
