@@ -111,6 +111,9 @@ function pdf_forms_type_edit($form, &$form_state, $pdf_form_type = NULL) {
     '#field_name' => 'fid',
     '#default_value' => $pdf_form_type->fid,
   );
+	if($pdf_form_type->fid > 0){
+		$form['file']['fid']['#disabled'] = TRUE;
+	}	
 
   $form['file']['fid']['#ajax']['wrapper'] = 'pdf-upload-wrapper';
 
