@@ -91,7 +91,7 @@ function pdf_forms_type_admin_overview() {
 
     $submission_total = db_query('SELECT COUNT(*) FROM {pdf_forms_data} WHERE bundle = :bundle', array(':bundle' => $row->bundle))->fetchField();
     $action_links = l('edit form', "admin/content/pdf_forms/{$row->bundle}/edit")
-      . " | " . l('view submissions', "pdf_form/{$row->bundle}/submissions")
+      . " | " . l('view submissions', "admin/content/form_submissions/{$row->bundle}")
       . " | " . l('submission link', "pdf_form/{$row->bundle}");
     $rows[] = array(
       $row->label,
@@ -131,7 +131,7 @@ function pdf_forms_submissions_overview() {
       'data' => t('View PDF'),
     ),
   );
-
+	
   $query = db_select('pdf_forms_data', 's');
   $query->fields('s', array('submission_id', 'uid', 'created', 'fid'))
     ->join('users', 'u', 'u.uid = s.uid');
@@ -140,6 +140,7 @@ function pdf_forms_submissions_overview() {
   $query->fields('f', array('uri'))
     ->join('file_managed', 'f', 'f.fid = s.fid');
   $query->fields('t', array('label'));
+	if($bundle = arg(3)) $query->condition('t.label', $bundle);
   $query->extend('TableSort')->orderByHeader($header);
   $query->extend('PagerDefault')->limit(20);
   $results = $query->execute();
