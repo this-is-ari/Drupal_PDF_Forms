@@ -242,6 +242,6 @@ function pdf_forms_rules_action_save_submission($bundle, $data_entities) {
   $entity->pdfdata = serialize($file->pdfdata);
   pdf_forms_save($entity);
 
-  return array('file' => $file);
+  return array('file' => $file, 'sid' => $entity->submission_id);
 
 }

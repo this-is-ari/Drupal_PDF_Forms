@@ -168,7 +168,7 @@ function pdf_forms_type_submission_edit($form, &$form_state, $sid) {
     $results = db_query('SELECT machine_name, type, fieldinfo FROM {pdf_forms_field_mapping} WHERE bundle = :bundle', array(':bundle' => $submission->bundle));
     foreach ($results as $field_map) {
       $map[$field_map->machine_name]['type'] = $field_map->type;
-      $map[$field_map->machine_name]['info'] = $field_map->fieldinfo;
+      $map[$field_map->machine_name]['info'] = unserialize($field_map->fieldinfo);
     }
 
     $pdfdata = unserialize($submission->pdfdata);
@@ -182,7 +182,7 @@ function pdf_forms_type_submission_edit($form, &$form_state, $sid) {
         }
         elseif ($map[$fname]['type'] == "Radio") {
           $form[$fname]['#type'] = "radios";
-          $options = unserialize($map[$fname]['info']);
+          $options = $map[$fname]['info']['options'];
           if (!in_array($fvalue, $options)) {
             $fvalue = NULL;
           }
@@ -196,6 +196,9 @@ function pdf_forms_type_submission_edit($form, &$form_state, $sid) {
         else {
           $form[$fname]['#type'] = "textfield";
         }
+				if(isset($map[$fname]['info']['required'])){
+					$form[$fname]['#required'] = TRUE;
+				}				
 
         $form[$fname]['#title'] = $fname;
         $form[$fname]['#default_value'] = $fvalue;

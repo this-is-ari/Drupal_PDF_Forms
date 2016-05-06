@@ -280,9 +280,9 @@ function pdf_forms_type_edit_submit($form, &$form_state) {
     // The file has been changed.
     if (empty($pdf_form_type->fid)) {
       // This is the first time this bundle has been saved.
-      $new_bundle = TRUE;
+      $new_bundle = TRUE; 
     }
-    elseif ($pdf_form_type->fid !== $values['fid']) {
+    /*elseif ($pdf_form_type->fid !== $values['fid']) {
       // We are editing a bundle - the File ID has changed, which means we need to remove the old file + regenerate mappings
       // we need to delete mappings and update the fid.
       $old_file = file_load($pdf_form_type->fid);
@@ -294,7 +294,7 @@ function pdf_forms_type_edit_submit($form, &$form_state) {
 					->execute();   
 				unset($form_state['input']['fields']);
       }
-    }
+    }*/
     $file = file_load($values['fid']);
     file_usage_add($file, 'pdf_forms', $pdf_form_type->bundle, 0);
     $pdf_form_type->fid = $values['fid'];
@@ -306,8 +306,9 @@ function pdf_forms_type_edit_submit($form, &$form_state) {
   /* Field mappings */
   $new_record = db_query('SELECT COUNT(*) FROM {pdf_forms_field_mapping} WHERE bundle = :bundle', array(':bundle' => $pdf_form_type->bundle))->fetchField();
   $data = array();
-  if (isset($form_state['input']['fields'])) {
-    foreach ($form_state['input']['fields']['table'] as $machine_name => $field) {
+
+  if (isset($form_state['values']['fields'])) {
+    foreach ($form_state['values']['fields']['table'] as $machine_name => $field) {
       $data = array(
         'bundle' => $pdf_form_type->bundle,
         'machine_name' => $machine_name,
@@ -321,9 +322,10 @@ function pdf_forms_type_edit_submit($form, &$form_state) {
 
       // Check if this is a new record.
       $primary_keys = ($new_record > 0) ? array('bundle', 'machine_name') : array();
-      $result = drupal_write_record('pdf_forms_field_mapping', $data, $primary_keys);
+			$result = drupal_write_record('pdf_forms_field_mapping', $data, $primary_keys);
     }
   }
+	
   if ($new_bundle == TRUE) {
     menu_rebuild();
     drupal_set_message(t("New PDF Form Created"));
@@ -422,7 +424,7 @@ function pdf_forms_edit($form, &$form_state, $bundle = NULL) {
   $results = db_query('SELECT machine_name, type, fieldinfo FROM {pdf_forms_field_mapping} WHERE bundle = :bundle', array(':bundle' => $bundle));
   foreach ($results as $field_map) {
     $map[$field_map->machine_name]['type'] = $field_map->type;
-    $map[$field_map->machine_name]['info'] = $field_map->fieldinfo;
+    $map[$field_map->machine_name]['info'] = unserialize($field_map->fieldinfo);
   }
 
   if (count($map)) {
@@ -432,7 +434,7 @@ function pdf_forms_edit($form, &$form_state, $bundle = NULL) {
       }
       elseif ($map[$fname]['type'] == "Radio") {
         $form[$fname]['#type'] = "radios";
-        $options = unserialize($map[$fname]['info']);
+        $options = $map[$fname]['info']['options'];
 				$vars = array();
         foreach ($options as $option) {
           $vars[$option] = $option;
@@ -443,7 +445,14 @@ function pdf_forms_edit($form, &$form_state, $bundle = NULL) {
       else {
         $form[$fname]['#type'] = "textfield";
       }
-
+			// Check required field
+			if(isset($map[$fname]['info']['required'])){
+				$form[$fname]['#required'] = TRUE;
+			}
+			// Add field description
+			if(isset($map[$fname]['info']['tooltip'])){
+				$form[$fname]['#description'] = $map[$fname]['info']['tooltip'];
+			}
       $form[$fname]['#title'] = $fname;
       // $form[$fname]['#default_value'] = $fvalue;.
     }
@@ -459,6 +468,7 @@ function pdf_forms_edit($form, &$form_state, $bundle = NULL) {
     '#value' => t('Save'),
     '#weight' => 500,
   );
+
   return $form;
 }
 

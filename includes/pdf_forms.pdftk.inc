@@ -59,24 +59,11 @@ function pdf_forms_fields($file = NULL) {
       'FieldFlags' => 'flags',
       'FieldJustification' => 'justification',
       'FieldStateOption' => 'fieldinfo',
+			'FieldNameAlt' => 'FieldNameAlt', 
     );
     $fieldsdata = array();
     $index = -1;
-    /*foreach ($data as $id => $row) {
-    if ($row == '---') {
-    // Next Field
-    $index++;
-    continue;
-    }
-    $output = explode(':', $row);
 
-    $column = $output[0];
-    $value = $output[1];
-    if (in_array($column, array_keys($field_map))) {
-    // Set the column's data value
-    $fields[$index][$field_map[$column]] = trim($value);
-    }
-    }*/
     foreach ($data as $id => $row) {
       if ($row == '---') {
         // Next Field.
@@ -93,27 +80,43 @@ function pdf_forms_fields($file = NULL) {
       }
     }
     $fields = array();
-    $index = 0;
-    foreach ($fieldsdata as $field) {
-      if ($field['FieldType'][0] == "Button" && $field['FieldFlags'][0] == "49152") {
-        $field['FieldType'][0] = "Radio";
+
+    foreach ($fieldsdata as $findex => $field) {
+			$fields[$findex]['fieldinfo'] = array();
+      if ($field['FieldType'][0] == "Button" && ($field['FieldFlags'][0] == "49152" || $field['FieldFlags'][0] == "49154")) {
+        $field['FieldType'][0] = "Radio";			
       }
+			// Check if required field
+			if($field['FieldFlags'][0] == "49154" || $field['FieldFlags'][0] == "2"){
+				$fields[$findex]['fieldinfo']['required'] = TRUE;
+			}
+			
+			if(isset($field['FieldStateOption'])){
+				$fields[$findex]['fieldinfo']['options'] = $field['FieldStateOption'];
+				unset($field['FieldStateOption']);
+			}
+			if(isset($field['FieldNameAlt'])){
+				$fields[$findex]['fieldinfo']['tooltip'] = $field['FieldNameAlt'][0];
+				unset($field['FieldNameAlt']);
+			}			
       foreach ($field as $ftype => $fvalue) {
 
         if ($ftype == 'FieldStateOption') {
           $fvalue = serialize($fvalue);
+					$fields[$findex]['fieldinfo']['options'] = $fvalue;
         }
         else {
           $fvalue = $fvalue[0];
         }
-        $fields[$index][$field_map[$ftype]] = $fvalue;
+        $fields[$findex][$field_map[$ftype]] = $fvalue;
       }
-      $index++;
+			$fields[$findex]['fieldinfo'] = serialize($fields[$findex]['fieldinfo']);
     }
   }
   if (!count($fields)) {
     return FALSE;
   }
+
   return $fields;
 }
 
