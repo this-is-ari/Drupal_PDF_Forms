@@ -116,32 +116,6 @@ function pdf_forms_rules_action_info() {
     'group' => t('PDF Forms'),
   );
 
-  $info['pdf_forms_save_file'] = $defaults + array(
-    'label' => t('Generate PDF File From Entity'),
-    'base' => 'pdf_forms_rules_action_save_file',
-    'provides' => array(
-      'file' => array(
-        'type' => 'file',
-        'label' => t('PDF File'),
-      ),
-    ),
-    'parameter' => array(
-      'bundle' => array(
-        'type' => 'text',
-        'label' => t('PDF Form'),
-        'description' => t("The machine name of the PDF Form template to populate"),
-        'options list' => 'pdf_forms_bundle_options',
-       // 'restriction' => 'input',.
-      ),
-      'data_entities' => array(
-        'type' => 'list<entity>',
-        'label' => t('Entities'),
-        'description' => t('These entities will be used to retrieve token values when populating the PDF form '),
-        'optional' => TRUE,
-        'allow null' => TRUE,
-      ),
-    ),
-  );
   $info['pdf_forms_save_submission'] = $defaults + array(
     'label' => t('Create submission data From Entity'),
     'base' => 'pdf_forms_rules_action_save_submission',
@@ -150,6 +124,10 @@ function pdf_forms_rules_action_info() {
         'type' => 'file',
         'label' => t('PDF File'),
       ),
+      'sid' => array(
+         'type' => 'integer',
+         'label' => t('PDF Forms Submission ID'),
+         ),
     ),
     'parameter' => array(
       'bundle' => array(
@@ -203,24 +181,6 @@ function pdf_forms_file_options() {
  * - Bundle Type.
  */
 function pdf_forms_rules_condition_info() {
-
-}
-
-/**
- * - Generates a PDF file for the provided entity.
- */
-function pdf_forms_rules_action_save_file($bundle, $data_entities) {
-
-  $entity = entity_get_controller('pdf_form')->create($bundle);
-  global $user;
-  $entity->uid = $user->uid;
-
-  module_load_include('inc', 'pdf_forms', 'includes/pdf_forms.pdftk');
-
-  $file = pdf_forms_pdftk_create_completed_form($entity, $data_entities);
-  $entity->fid = $file->fid;
-
-  return array('file' => $file);
 
 }
 
