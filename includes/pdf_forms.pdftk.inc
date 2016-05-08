@@ -99,6 +99,9 @@ function pdf_forms_fields($file = NULL) {
 				$fields[$findex]['fieldinfo']['tooltip'] = $field['FieldNameAlt'][0];
 				unset($field['FieldNameAlt']);
 			}			
+			else{
+				$fields[$findex]['fieldinfo']['tooltip'] = '';
+			}
       foreach ($field as $ftype => $fvalue) {
 
         if ($ftype == 'FieldStateOption') {
