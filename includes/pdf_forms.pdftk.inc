@@ -87,9 +87,13 @@ function pdf_forms_fields($file = NULL) {
         $field['FieldType'][0] = "Radio";			
       }
 			// Check if required field
-			if($field['FieldFlags'][0] == "49154" || $field['FieldFlags'][0] == "2"){
+			if($field['FieldFlags'][0] == "49154" || $field['FieldFlags'][0] == "2" || $field['FieldFlags'][0] == "3"){
 				$fields[$findex]['fieldinfo']['required'] = TRUE;
 			}
+			// Check if readonly field
+			if($field['FieldFlags'][0] == "1" || $field['FieldFlags'][0] == "3"){
+				$fields[$findex]['fieldinfo']['readonly'] = TRUE;
+			}			
 			
 			if(isset($field['FieldStateOption'])){
 				$fields[$findex]['fieldinfo']['options'] = $field['FieldStateOption'];

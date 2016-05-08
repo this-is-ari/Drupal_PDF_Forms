@@ -197,8 +197,13 @@ function pdf_forms_type_submission_edit($form, &$form_state, $sid) {
         else {
           $form[$fname]['#type'] = "textfield";
         }
+				// Check required field
 				if(isset($map[$fname]['info']['required'])){
 					$form[$fname]['#required'] = TRUE;
+				}		
+				// Check readonly field
+				if(isset($map[$fname]['info']['readonly'])){
+					$form[$fname]['#disabled'] = $map[$fname]['info']['readonly'];
 				}				
 
         $form[$fname]['#title'] = $fname;

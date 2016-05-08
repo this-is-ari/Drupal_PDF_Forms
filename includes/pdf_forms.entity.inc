@@ -483,6 +483,10 @@ function pdf_forms_edit($form, &$form_state, $bundle = NULL) {
 			if(isset($map[$fname]['info']['required'])){
 				$form[$fname]['#required'] = TRUE;
 			}
+			// Check readonly field
+			if(isset($map[$fname]['info']['readonly'])){
+				$form[$fname]['#disabled'] = $map[$fname]['info']['readonly'];
+			}			
 			// Add field description
 			if(isset($map[$fname]['info']['tooltip'])){
 				$form[$fname]['#description'] = $map[$fname]['info']['tooltip'];
