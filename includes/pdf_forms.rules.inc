@@ -124,9 +124,9 @@ function pdf_forms_rules_action_info() {
         'type' => 'file',
         'label' => t('PDF File'),
       ),
-      'sid' => array(
-         'type' => 'integer',
-         'label' => t('PDF Forms Submission ID'),
+      'submission' => array(
+         'type' => 'pdf_form',
+         'label' => t('The created PDF Form Submission'),
          ),
     ),
     'parameter' => array(
@@ -202,6 +202,6 @@ function pdf_forms_rules_action_save_submission($bundle, $data_entities) {
   $entity->pdfdata = serialize($file->pdfdata);
   pdf_forms_save($entity);
 
-  return array('file' => $file, 'sid' => $entity->submission_id);
+  return array('file' => $file, 'submission' => $entity);
 
 }
