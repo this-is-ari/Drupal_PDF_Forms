@@ -203,6 +203,12 @@ function pdf_forms_types() {
 }
 
 /**
+* Implements hook_entity_access.
+*/
+function pdf_forms_entity_access($op, $entity = null, $account = null, $entity_type = '') {
+    return user_access($op, $account);
+}
+/**
  * Implements hook_entity_info.
  */
 function pdf_forms_entity_info() {
@@ -216,6 +222,7 @@ function pdf_forms_entity_info() {
       'id' => 'submission_id',
       'bundle' => 'bundle',
     ),
+    'access callback' => 'pdf_forms_entity_access',
     'bundle keys' => array(
       'bundle' => 'bundle',
     ),
