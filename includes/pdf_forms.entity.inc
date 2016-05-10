@@ -490,9 +490,10 @@ function pdf_forms_create($bundle) {
 function pdf_forms_edit($form, &$form_state, $bundle = NULL) {
   $form_state['bundle'] = $bundle;
   $map = array();
-  $results = db_query('SELECT machine_name, type, fieldinfo FROM {pdf_forms_field_mapping} WHERE bundle = :bundle', array(':bundle' => $bundle));
+  $results = db_query('SELECT machine_name, type, value, fieldinfo FROM {pdf_forms_field_mapping} WHERE bundle = :bundle', array(':bundle' => $bundle));
   foreach ($results as $field_map) {
     $map[$field_map->machine_name]['type'] = $field_map->type;
+		$map[$field_map->machine_name]['value'] = $field_map->value;
     $map[$field_map->machine_name]['info'] = unserialize($field_map->fieldinfo);
   }
 
@@ -514,6 +515,7 @@ function pdf_forms_edit($form, &$form_state, $bundle = NULL) {
       else {
         $form[$fname]['#type'] = "textfield";
 				$form[$fname]['#maxlength'] = "256";
+				$form[$fname]['#default_value'] = $map[$fname]['value'];
       }
 			// Check required field
 			if(isset($map[$fname]['info']['required'])){
@@ -528,7 +530,7 @@ function pdf_forms_edit($form, &$form_state, $bundle = NULL) {
 				$form[$fname]['#description'] = $map[$fname]['info']['tooltip'];
 			}
       $form[$fname]['#title'] = $fname;
-      // $form[$fname]['#default_value'] = $fvalue;.
+      
     }
   }
   else {
