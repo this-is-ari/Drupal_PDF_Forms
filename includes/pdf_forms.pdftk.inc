@@ -146,13 +146,20 @@ function pdf_forms_pdftk_prepare_submission_data($entity, $data_entities = NULL)
  * Prepare data arrray for PDF population.
  */
 function pdf_forms_pdftk_prepare_datatypes($bundle, $values) {
-  $results = db_query('SELECT machine_name, type FROM {pdf_forms_field_mapping} WHERE bundle = :bundle', array(':bundle' => $bundle));
+  $results = db_query('SELECT machine_name, type, fieldinfo FROM {pdf_forms_field_mapping} WHERE bundle = :bundle', array(':bundle' => $bundle));
   foreach ($results as $field_map) {
-    $map[$field_map->machine_name] = $field_map->type;
+    $map[$field_map->machine_name]['type'] = $field_map->type;
+		$map[$field_map->machine_name]['fieldinfo'] = unserialize($field_map->fieldinfo);
   }
   foreach ($values as $name => $value) {
-    if ($map[$name] == "Button" && ($value)) {
-      $values[$name] = "On";
+    if ($map[$name]['type'] == "Button" && ($value)) {
+			// Find option not equal to Off
+			foreach($map[$name]['fieldinfo']['options'] as $option){
+				if($option != "Off"){
+					break; 
+				}
+			}
+      $values[$name] = $option;
     }
   }
 
