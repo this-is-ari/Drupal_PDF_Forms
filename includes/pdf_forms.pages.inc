@@ -257,7 +257,7 @@ function pdf_forms_type_submission_edit_submit($form, &$form_state) {
     $file = pdf_forms_pdftk_generate_completed_form($submission, $data);
     $submission->fid = $file->fid;
     pdf_forms_save($submission);
-
+		drupal_set_message('Changes saved');
   }
   elseif ($form_state['clicked_button']['#value'] == 'Delete') {
     if (!isset($form_state['storage']['confirm'])) {
