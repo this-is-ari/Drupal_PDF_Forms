@@ -14,6 +14,14 @@ function pdf_forms_entity_property_info() {
     'description' => t("The unique ID of the node."),
     'schema field' => 'submission_id',
   );
+  
+  $properties['fid'] = array(
+    'label' => t("PDF Submission File ID"),
+    'type' => 'integer',
+    'description' => t("The unique ID of the PDF File associated with this submission."),
+    'schema field' => 'fid',
+  );
+
   $properties['bundle'] = array(
     'label' => t("PDF Form Template Bundle"),
     'type' => 'varchar',
