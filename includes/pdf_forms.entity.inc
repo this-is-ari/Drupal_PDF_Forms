@@ -513,10 +513,11 @@ function pdf_forms_edit($form, &$form_state, $bundle = NULL) {
       }
       else {
         $form[$fname]['#type'] = "textfield";
+				$form[$fname]['#maxlength'] = "256";
       }
 			// Check required field
 			if(isset($map[$fname]['info']['required'])){
-				$form[$fname]['#required'] = TRUE;
+				$form[$fname]['#required'] = TRUE;				
 			}
 			// Check readonly field
 			if(isset($map[$fname]['info']['readonly'])){
