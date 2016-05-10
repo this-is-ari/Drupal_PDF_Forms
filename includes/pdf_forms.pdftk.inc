@@ -97,6 +97,10 @@ function pdf_forms_fields($file = NULL) {
 			
 			if(isset($field['FieldStateOption'])){
 				$fields[$findex]['fieldinfo']['options'] = $field['FieldStateOption'];
+				// Delete "Off" value from options if required field
+				if((($key = array_search("Off", $fields[$findex]['fieldinfo']['options'])) !== false) && isset($fields[$findex]['fieldinfo']['required'])) {
+					unset($fields[$findex]['fieldinfo']['options'][$key]);
+				}						
 				unset($field['FieldStateOption']);
 			}
 			if(isset($field['FieldNameAlt'])){
@@ -107,14 +111,7 @@ function pdf_forms_fields($file = NULL) {
 				$fields[$findex]['fieldinfo']['tooltip'] = '';
 			}
       foreach ($field as $ftype => $fvalue) {
-
-        if ($ftype == 'FieldStateOption') {
-          $fvalue = serialize($fvalue);
-					$fields[$findex]['fieldinfo']['options'] = $fvalue;
-        }
-        else {
-          $fvalue = $fvalue[0];
-        }
+        $fvalue = $fvalue[0];        
         $fields[$findex][$field_map[$ftype]] = $fvalue;
       }
 			$fields[$findex]['fieldinfo'] = serialize($fields[$findex]['fieldinfo']);
