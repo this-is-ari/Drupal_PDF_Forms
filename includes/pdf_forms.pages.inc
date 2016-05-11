@@ -166,7 +166,7 @@ function pdf_forms_type_submission_edit($form, &$form_state, $sid) {
   if (!isset($form_state['storage']['confirm'])) {
     $submission = pdf_forms_load($sid);
     $map = array();
-    $results = db_query('SELECT machine_name, type, fieldinfo FROM {pdf_forms_field_mapping} WHERE bundle = :bundle', array(':bundle' => $submission->bundle));
+    $results = db_query('SELECT machine_name, type, fieldinfo FROM {pdf_forms_field_mapping} WHERE bundle = :bundle ORDER BY weight ASC', array(':bundle' => $submission->bundle));
     foreach ($results as $field_map) {
       $map[$field_map->machine_name]['type'] = $field_map->type;
       $map[$field_map->machine_name]['info'] = unserialize($field_map->fieldinfo);
