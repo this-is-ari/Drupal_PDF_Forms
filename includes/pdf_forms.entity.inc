@@ -15,10 +15,12 @@ function pdf_forms_entity_property_info() {
     'schema field' => 'submission_id',
   );
   
-  $properties['fid'] = array(
-    'label' => t("PDF Submission File ID"),
-    'type' => 'integer',
-    'description' => t("The unique ID of the PDF File associated with this submission."),
+  $properties['pdf_file'] = array(
+    'label' => t("PDF Submission File Entity"),
+    'type' => 'file',
+    'description' => t("The PDF File associated with this submission."),
+   // 'getter callback' => 'entity_metadata_pdf_forms_get_properties',
+   // 'setter callback' => 'entity_metadata_pdf_forms_set_properties',
     'schema field' => 'fid',
   );
 
@@ -28,20 +30,55 @@ function pdf_forms_entity_property_info() {
     'description' => t("The PDF form template bundle this submission belongs to"),
     'schema field' => 'bundle',
   );
+
   $properties['author'] = array(
     'label' => t("Author"),
     'type' => 'user',
-    'description' => t("The author of the node."),
- // @TODO: write getters and setters for assign permissions to submissions
- //   'getter callback' => 'entity_metadata_node_get_properties',
- //   'setter callback' => 'entity_metadata_node_set_properties',
- //   'setter permission' => 'administer nodes',
+    'description' => t("The author of the submission."),
+//    'getter callback' => 'entity_metadata_pdf_forms_get_properties',
+//    'setter callback' => 'entity_metadata_pdf_forms_set_properties',
+//    'setter permission' => 'edit any submission',
     'required' => TRUE,
     'schema field' => 'uid',
   );
   // @TODO: Date, PDF Data submission data itself, fid (entity refernece)
   return $info;
 }
+
+/**
+* Callback for getting entity properties.
+*/
+/*
+function entity_metadata_pdf_forms_get_properties($pdf_form, array $options, $name, $entity_type) {
+  switch ($name) {
+    case 'is_new':
+      return empty($pdf_form->sid) || !empty($pdf_form->is_new);
+
+    case 'edit_url':
+      return url('pdf_form/submission/' . $pdf_form->fid . '/edit', $options);
+
+    case 'pdf_file':
+      return ($pdf_form->fid ? entity_load('file', $pdf_form->fid) : NULL);
+  }
+}
+*/
+
+/**
+* Callback for setting node properties.
+*/
+/*
+function entity_metadata_pdf_forms_set_properties($pdf_form, $name, $value) {
+  switch ($name) {
+    case 'author':
+      $pdf_form->uid = $value->uid;
+      $pdf_form->name = $value->name;
+      break;
+    case 'pdf_file':
+      $pdf_form->fid = $value->fid;
+      break;
+  }
+}
+*/
 
 /**
  * Returns the title for a provided pdf_form_type.
