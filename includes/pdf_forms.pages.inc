@@ -206,7 +206,10 @@ function pdf_forms_type_submission_edit($form, &$form_state, $sid) {
 				if(isset($map[$fname]['info']['readonly'])){
 					$form[$fname]['#disabled'] = $map[$fname]['info']['readonly'];
 				}				
-
+				// Add field description
+				if(isset($map[$fname]['info']['tooltip'])){
+					$form[$fname]['#description'] = $map[$fname]['info']['tooltip'];
+				}
         $form[$fname]['#title'] = $fname;
         $form[$fname]['#default_value'] = $fvalue;
 
