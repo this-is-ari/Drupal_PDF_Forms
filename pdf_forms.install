@@ -78,7 +78,11 @@ function pdf_forms_schema() {
       ),
       'type' => array(
         'type' => 'text'
-      ),			
+      ),		
+      'weight' => array(
+        'type' => 'int',
+				'default' => 0
+      ),				
       'fieldinfo' => array(
         'type' => 'text'
       ),				
@@ -164,6 +168,13 @@ function pdf_forms_update_7004() {
 		'type' => 'text',
   );
   db_add_field( 'pdf_forms_field_mapping', 'fieldinfo', $spec);
+}
+function pdf_forms_update_7005() {
+  $spec = array(
+		'type' => 'int',
+		'default' => 0,
+  );
+  db_add_field( 'pdf_forms_field_mapping', 'weight', $spec);
 }
 /**
 * Implements hook_requirements

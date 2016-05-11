@@ -1,6 +1,41 @@
 <?php
 
 /**
+ * Implemented hook_entity_property_info()
+ */
+function pdf_forms_entity_property_info() {
+  $info = array();
+  // Add meta-data about the basic node properties.
+  $properties = &$info['pdf_form']['properties'];
+
+  $properties['sid'] = array(
+    'label' => t("Submission ID"),
+    'type' => 'integer',
+    'description' => t("The unique ID of the node."),
+    'schema field' => 'submission_id',
+  );
+  $properties['bundle'] = array(
+    'label' => t("PDF Form Template Bundle"),
+    'type' => 'varchar',
+    'description' => t("The PDF form template bundle this submission belongs to"),
+    'schema field' => 'bundle',
+  );
+  $properties['author'] = array(
+    'label' => t("Author"),
+    'type' => 'user',
+    'description' => t("The author of the node."),
+ // @TODO: write getters and setters for assign permissions to submissions
+ //   'getter callback' => 'entity_metadata_node_get_properties',
+ //   'setter callback' => 'entity_metadata_node_set_properties',
+ //   'setter permission' => 'administer nodes',
+    'required' => TRUE,
+    'schema field' => 'uid',
+  );
+  // @TODO: Date, PDF Data submission data itself, fid (entity refernece)
+  return $info;
+}
+
+/**
  * Returns the title for a provided pdf_form_type.
  */
 function pdf_forms_type_title($type) {
@@ -136,7 +171,7 @@ function pdf_forms_type_edit($form, &$form_state, $pdf_form_type = NULL) {
         '#tree' => TRUE,
         '#theme' => 'table',
         '#header' => array(
-          t('Field Name'), t('Field Type'), t('Field Prefix'), t('Field Value'), t('Field Suffix'), t('Field Description'),
+          t('Field Name'), t('Field Type'), t('Field Prefix'), t('Field Value'), t('Field Suffix'), t('Field Description'), t('Weight'),
         ),
         '#rows' => array(),
       );
@@ -157,6 +192,7 @@ function pdf_forms_type_edit($form, &$form_state, $pdf_form_type = NULL) {
             'prefix' => $row->prefix,
             'suffix' => $row->suffix,
             'value' => $row->value,
+						'weight' => $row->weight,
 						'description' => isset($row->fieldinfo['tooltip']) ? $row->fieldinfo['tooltip'] : '',
           );
         }
@@ -214,6 +250,13 @@ function pdf_forms_type_edit($form, &$form_state, $pdf_form_type = NULL) {
           '#id' => 'fields-table-' . $id . '-fielddesc',
           '#type' => 'textarea',
           '#default_value' => $tooltip,
+        );		
+
+        $fieldweight = array(
+          '#id' => 'fields-table-' . $id . '-fieldweight',
+          '#type' => 'weight',
+          '#default_value' => isset($field_map_data[$id]) ? $field_map_data[$id]['weight'] : 0,
+					//'#attributes' => array('class' => 'weight'),
         );				
 			
         $machine_name = array(
@@ -234,6 +277,7 @@ function pdf_forms_type_edit($form, &$form_state, $pdf_form_type = NULL) {
           'value' => &$value,
           'suffix' => &$suffix,
 					'fielddesc' => &$fielddesc,
+					'fieldweight' => &$fieldweight,
           'machine_name' => &$machine_name,
           'fieldinfo' => &$fieldinfo,
         );
@@ -245,6 +289,7 @@ function pdf_forms_type_edit($form, &$form_state, $pdf_form_type = NULL) {
             array('data' => &$value),
             array('data' => &$suffix),
 						array('data' => &$fielddesc),
+						array('data' => &$fieldweight),
 						array('data' => &$fieldinfo),
         );
 
@@ -254,6 +299,7 @@ function pdf_forms_type_edit($form, &$form_state, $pdf_form_type = NULL) {
         unset($value);
         unset($suffix);
 				unset($fielddesc);
+				unset($fieldweight);
         unset($machine_name);
         unset($fieldinfo);
       }
@@ -351,6 +397,7 @@ function pdf_forms_type_edit_submit($form, &$form_state) {
 			'value' => $field['value'],
 			'suffix' => $field['suffix'],
 			'type' => $field['type'],
+			'weight' => (int)$field['fieldweight'],
 			'fieldinfo' => $field['fieldinfo'],
 		);
 
@@ -412,7 +459,7 @@ function pdf_forms_uri($entity) {
  * Implements view callback.
  */
 function pdf_forms_view($entity, $view_mode = 'full') {
-  $entity_type = 'pdf_forms';
+	$entity = pdf_forms_load($entity);
   $entity->content = array(
     '#view_mode' => $view_mode,
   );
@@ -455,7 +502,7 @@ function pdf_forms_create($bundle) {
 function pdf_forms_edit($form, &$form_state, $bundle = NULL) {
   $form_state['bundle'] = $bundle;
   $map = array();
-  $results = db_query('SELECT machine_name, type, value, fieldinfo FROM {pdf_forms_field_mapping} WHERE bundle = :bundle', array(':bundle' => $bundle));
+  $results = db_query('SELECT machine_name, type, value, fieldinfo FROM {pdf_forms_field_mapping} WHERE bundle = :bundle ORDER BY weight ASC', array(':bundle' => $bundle));
   foreach ($results as $field_map) {
     $map[$field_map->machine_name]['type'] = $field_map->type;
 		$map[$field_map->machine_name]['value'] = $field_map->value;
@@ -520,7 +567,7 @@ function pdf_forms_edit_submit($form, &$form_state) {
 
   unset($form_state['values']['form_id'], $form_state['values']['form_token'], $form_state['values']['form_build_id'], $form_state['values']['op'], $form_state['values']['submit_button'], $form_state['values']['delete_button']);
 
-  $submission = entity_get_controller('pdf_form')->create(array('bundle' => $form_state['bundle']));
+  $submission = entity_get_controller('pdf_form')->create(array('bundle'=>$form_state['bundle']));
   global $user;
   $submission->uid = $user->uid;
   $data = pdf_forms_pdftk_prepare_datatypes($submission->bundle, $form_state['values']);
