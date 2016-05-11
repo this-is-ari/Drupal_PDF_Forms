@@ -1,86 +1,6 @@
 <?php
 
 /**
- * Implemented hook_entity_property_info()
- */
-function pdf_forms_entity_property_info() {
-  $info = array();
-  // Add meta-data about the basic node properties.
-  $properties = &$info['pdf_form']['properties'];
-
-  $properties['sid'] = array(
-    'label' => t("Submission ID"),
-    'type' => 'integer',
-    'description' => t("The unique ID of the node."),
-    'schema field' => 'submission_id',
-  );
-  
-  $properties['pdf_file'] = array(
-    'label' => t("PDF Submission File Entity"),
-    'type' => 'file',
-    'description' => t("The PDF File associated with this submission."),
-   // 'getter callback' => 'entity_metadata_pdf_forms_get_properties',
-   // 'setter callback' => 'entity_metadata_pdf_forms_set_properties',
-    'schema field' => 'fid',
-  );
-
-  $properties['bundle'] = array(
-    'label' => t("PDF Form Template Bundle"),
-    'type' => 'varchar',
-    'description' => t("The PDF form template bundle this submission belongs to"),
-    'schema field' => 'bundle',
-  );
-
-  $properties['author'] = array(
-    'label' => t("Author"),
-    'type' => 'user',
-    'description' => t("The author of the submission."),
-//    'getter callback' => 'entity_metadata_pdf_forms_get_properties',
-//    'setter callback' => 'entity_metadata_pdf_forms_set_properties',
-//    'setter permission' => 'edit any submission',
-    'required' => TRUE,
-    'schema field' => 'uid',
-  );
-  // @TODO: Date, PDF Data submission data itself, fid (entity refernece)
-  return $info;
-}
-
-/**
-* Callback for getting entity properties.
-*/
-/*
-function entity_metadata_pdf_forms_get_properties($pdf_form, array $options, $name, $entity_type) {
-  switch ($name) {
-    case 'is_new':
-      return empty($pdf_form->sid) || !empty($pdf_form->is_new);
-
-    case 'edit_url':
-      return url('pdf_form/submission/' . $pdf_form->fid . '/edit', $options);
-
-    case 'pdf_file':
-      return ($pdf_form->fid ? entity_load('file', $pdf_form->fid) : NULL);
-  }
-}
-*/
-
-/**
-* Callback for setting node properties.
-*/
-/*
-function entity_metadata_pdf_forms_set_properties($pdf_form, $name, $value) {
-  switch ($name) {
-    case 'author':
-      $pdf_form->uid = $value->uid;
-      $pdf_form->name = $value->name;
-      break;
-    case 'pdf_file':
-      $pdf_form->fid = $value->fid;
-      break;
-  }
-}
-*/
-
-/**
  * Returns the title for a provided pdf_form_type.
  */
 function pdf_forms_type_title($type) {
@@ -600,7 +520,7 @@ function pdf_forms_edit_submit($form, &$form_state) {
 
   unset($form_state['values']['form_id'], $form_state['values']['form_token'], $form_state['values']['form_build_id'], $form_state['values']['op'], $form_state['values']['submit_button'], $form_state['values']['delete_button']);
 
-  $submission = entity_get_controller('pdf_form')->create($form_state['bundle']);
+  $submission = entity_get_controller('pdf_form')->create(array('bundle' => $form_state['bundle']));
   global $user;
   $submission->uid = $user->uid;
   $data = pdf_forms_pdftk_prepare_datatypes($submission->bundle, $form_state['values']);
