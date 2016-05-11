@@ -251,11 +251,11 @@ function pdf_forms_entity_property_info_alter(&$info) {
   $properties['sid'] = array(
     'label' => t("Submission ID"),
     'type' => 'integer',
-    'description' => t("The unique ID of the node."),
+    'description' => t("The unique ID of the form submission."),
     'schema field' => 'submission_id',
   );
   
-  $properties['pdf_file'] = array(
+  $properties['fid'] = array(
     'label' => t("PDF Submission File Entity"),
     'type' => 'file',
     'description' => t("The PDF File associated with this submission."),
@@ -281,7 +281,7 @@ function pdf_forms_entity_property_info_alter(&$info) {
     'required' => TRUE,
     'schema field' => 'uid',
   );
-  // @TODO: Date, PDF Data submission data itself, fid (entity refernece)
+  // @TODO: Date, PDF Data submission data itself
   return $info;
 }
 
