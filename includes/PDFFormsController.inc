@@ -4,22 +4,26 @@
  * @file
  * Default Entity Controller for PDFForms Entity.
  */
-class PDFFormsController extends DrupalDefaultEntityController {
+class PDFFormsController extends EntityAPIController {
 
   /**
    * Create a new Entity.
    */
-  public function create($bundle) {
+  public function create(array $values = array()) {
     $entity = new stdClass();
+    $entity->submission_id = 0;
+    $entity->bundle = $values['bundle'];
+    return $entity;
+/*
     $entity->bundle = $bundle;
     $entity->submission_id = 0;
-    return $entity;
+    return $entity;*/
   }
 
   /**
    * Saves the entity.
    */
-  public function save(&$entity) {
+  public function save($entity) {
     module_load_include('inc', 'pdf_forms', 'includes/pdf_forms.pdftk');
 
     // We need to create the entity first, and then we need to generate the PDF file.
