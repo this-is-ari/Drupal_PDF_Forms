@@ -207,6 +207,55 @@ function pdf_forms_menu() {
 }
 
 /**
+ * Implements hook_theme().
+ */
+function pdf_forms_theme($existing, $type, $theme, $path) {
+  $themes = array(
+    'pdf_forms_mapping_table' => array(
+      'render element' => 'element'
+    ),
+  );
+  return $themes;
+}
+
+function theme_pdf_forms_mapping_table($vars){
+
+  $element = $vars['element'];
+  drupal_add_tabledrag('maptable', 'order', 'sibling', 'fweight');
+ 
+  $header = $element['#header']; 
+  $rows = $element['#rows'];
+	/*
+  foreach ($element as $key) {
+    $row = array();
+    $row['data'] = array();
+    foreach ($header as $fieldname => $title) {
+      $row['data'][] = drupal_render($element[$key][$fieldname]);
+      $row['class'] = array('draggable');
+    }
+    $nrows[] = $row;
+  }
+	*/
+
+
+	foreach($rows as $index => $row){
+    $nrow = array();	
+		$td = array();
+		foreach($row as $td){
+			$nrow['data'][] = drupal_render($td);
+		}
+		$nrow['class'] = array('draggable'); 
+		$nrows[] = $nrow;
+	}
+	
+  return theme('table', array(
+    'header' => $header, 
+    'rows' => $nrows, 
+    'attributes' => array('id' => 'maptable'),
+  ));
+}
+
+/**
  * Return an array of types.
  */
 function pdf_forms_types() {

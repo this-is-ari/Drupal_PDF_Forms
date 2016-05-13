@@ -169,10 +169,20 @@ function pdf_forms_type_edit($form, &$form_state, $pdf_form_type = NULL) {
     if ($fields = pdf_forms_fields($file)) {
       $form['fields']['table'] = array(
         '#tree' => TRUE,
-        '#theme' => 'table',
-        '#header' => array(
+        '#theme' => 'pdf_forms_mapping_table',
+        /*'#header' => array(
           t('Field Name'), t('Field Type'), t('Field Prefix'), t('Field Value'), t('Field Suffix'), t('Field Description'), t('Weight'),
-        ),
+        ),*/
+        '#header' => array(
+          array('data' => t('Field Name')),
+					array('data' => t('Field Type')),
+					array('data' => t('Field Prefix')),
+					array('data' => t('Field Value')),
+					array('data' => t('Field Suffix')),
+					array('data' => t('Field Description')),
+					array('data' => t('Weight'), 'field' => 'fweight', 'sort' => 'ASC'),
+        ),				
+
         '#rows' => array(),
       );
 
@@ -255,8 +265,9 @@ function pdf_forms_type_edit($form, &$form_state, $pdf_form_type = NULL) {
         $fieldweight = array(
           '#id' => 'fields-table-' . $id . '-fieldweight',
           '#type' => 'weight',
+					'#value' => isset($field_map_data[$id]) ? $field_map_data[$id]['weight'] : 0,
           '#default_value' => isset($field_map_data[$id]) ? $field_map_data[$id]['weight'] : 0,
-					//'#attributes' => array('class' => 'weight'),
+					'#attributes' => array('class' => array('fweight', 'item-row-weight')),
         );				
 			
         $machine_name = array(
@@ -282,7 +293,7 @@ function pdf_forms_type_edit($form, &$form_state, $pdf_form_type = NULL) {
           'fieldinfo' => &$fieldinfo,
         );
 
-        $form['fields']['table']['#rows'][] = array(
+        $form['fields']['table']['#rows'][$id] = array(
             array('data' => &$field_name),
             array('data' => &$field_type),
             array('data' => &$prefix),
@@ -293,6 +304,18 @@ function pdf_forms_type_edit($form, &$form_state, $pdf_form_type = NULL) {
 						array('data' => &$fieldinfo),
         );
 
+/*
+        $form['fields']['table']['#rows'][] = array(
+            array(&$field_name),
+            array(&$field_type),
+            array(&$prefix),
+            array(&$value),
+            array(&$suffix),
+						array(&$fielddesc),
+						array(&$fieldweight),
+						array(&$fieldinfo),
+        );
+	*/			
         unset($field_name);
         unset($field_type);
         unset($prefix);
