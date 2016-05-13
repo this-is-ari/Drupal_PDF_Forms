@@ -303,19 +303,7 @@ function pdf_forms_type_edit($form, &$form_state, $pdf_form_type = NULL) {
 					'fieldweight' => &$fieldweight,
           'fieldinfo' => &$fieldinfo,
         );
-
-/*
-        $form['fields']['table']['#rows'][] = array(
-            array(&$field_name),
-            array(&$field_type),
-            array(&$prefix),
-            array(&$value),
-            array(&$suffix),
-						array(&$fielddesc),
-						array(&$fieldweight),
-						array(&$fieldinfo),
-        );
-	*/			
+		
         unset($field_name);
         unset($field_type);
         unset($prefix);
@@ -545,7 +533,7 @@ function pdf_forms_edit($form, &$form_state, $bundle = NULL) {
           $vars[$option] = $option;
         }
         $form[$fname]['#options'] = $vars;
-
+				if(in_array("Off", $options)) $form[$fname]['#default_value'] = 'Off';
       }
       else {
         $form[$fname]['#type'] = "textfield";

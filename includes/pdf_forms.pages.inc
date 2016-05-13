@@ -185,7 +185,7 @@ function pdf_forms_type_submission_edit($form, &$form_state, $sid) {
           $form[$fname]['#type'] = "radios";
           $options = $map[$fname]['info']['options'];
           if (!in_array($fvalue, $options)) {
-            $fvalue = NULL;
+            $fvalue = in_array("Off", $options) ? "Off" : NULL;
           }
 					$vars = array();
           foreach ($options as $option) {
