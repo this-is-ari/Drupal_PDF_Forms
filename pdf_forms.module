@@ -304,6 +304,53 @@ function pdf_forms_entity_info() {
   return $info;
 }
 
+
+/**
+  * Implemented hook_entity_property_info()
+  */
+ function pdf_forms_entity_property_info_alter(&$info) {
+   //$info = array();
+   // Add meta-data about the basic node properties.
+   $properties = &$info['pdf_form']['properties'];
+ 
+   $properties['sid'] = array(
+     'label' => t("Submission ID"),
+     'type' => 'integer',
+     'description' => t("The unique ID of the form submission."),
+     'schema field' => 'submission_id',
+   );
+   
+   $properties['fid'] = array(
+     'label' => t("PDF Submission File Entity"),
+     'type' => 'file',
+     'description' => t("The PDF File associated with this submission."),
+    // 'getter callback' => 'entity_metadata_pdf_forms_get_properties',
+    // 'setter callback' => 'entity_metadata_pdf_forms_set_properties',
+     'schema field' => 'fid',
+   );
+ 
+   $properties['bundle'] = array(
+     'label' => t("PDF Form Template Bundle"),
+     'type' => 'varchar',
+     'description' => t("The PDF form template bundle this submission belongs to"),
+     'schema field' => 'bundle',
+   );
+ 
+   $properties['author'] = array(
+     'label' => t("Author"),
+     'type' => 'user',
+     'description' => t("The author of the submission."),
+ //    'getter callback' => 'entity_metadata_pdf_forms_get_properties',
+ //    'setter callback' => 'entity_metadata_pdf_forms_set_properties',
+ //    'setter permission' => 'edit any submission',
+     'required' => TRUE,
+     'schema field' => 'uid',
+   );
+   // @TODO: Date, PDF Data submission data itself
+   return $info;
+ }
+
+
 /**
  *
  */
