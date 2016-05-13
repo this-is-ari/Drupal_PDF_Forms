@@ -180,7 +180,7 @@ function pdf_forms_type_edit($form, &$form_state, $pdf_form_type = NULL) {
 					array('data' => t('Field Value')),
 					array('data' => t('Field Suffix')),
 					array('data' => t('Field Description')),
-					array('data' => t('Weight'), 'field' => 'fweight', 'sort' => 'ASC'),
+					array('data' => t('Weight')),
         ),				
 
         '#rows' => array(),
@@ -264,9 +264,9 @@ function pdf_forms_type_edit($form, &$form_state, $pdf_form_type = NULL) {
 
         $fieldweight = array(
           '#id' => 'fields-table-' . $id . '-fieldweight',
-          '#type' => 'weight',
-					'#value' => isset($field_map_data[$id]) ? $field_map_data[$id]['weight'] : 0,
-          '#default_value' => isset($field_map_data[$id]) ? $field_map_data[$id]['weight'] : 0,
+          '#type' => 'textfield',
+					'#size' => 3,
+					'#default_value' => isset($field_map_data[$id]) ? $field_map_data[$id]['weight'] : 0,
 					'#attributes' => array('class' => array('fweight', 'item-row-weight')),
         );				
 			
@@ -294,14 +294,14 @@ function pdf_forms_type_edit($form, &$form_state, $pdf_form_type = NULL) {
         );
 
         $form['fields']['table']['#rows'][$id] = array(
-            array('data' => &$field_name),
-            array('data' => &$field_type),
-            array('data' => &$prefix),
-            array('data' => &$value),
-            array('data' => &$suffix),
-						array('data' => &$fielddesc),
-						array('data' => &$fieldweight),
-						array('data' => &$fieldinfo),
+          'name' => &$field_name,
+          'type' => &$field_type,
+          'prefix' => &$prefix,
+          'value' => &$value,
+          'suffix' => &$suffix,
+					'fielddesc' => &$fielddesc,
+					'fieldweight' => &$fieldweight,
+          'fieldinfo' => &$fieldinfo,
         );
 
 /*

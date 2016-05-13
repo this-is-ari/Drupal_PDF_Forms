@@ -222,9 +222,10 @@ function theme_pdf_forms_mapping_table($vars){
 
   $element = $vars['element'];
   drupal_add_tabledrag('maptable', 'order', 'sibling', 'fweight');
- 
+
   $header = $element['#header']; 
   $rows = $element['#rows'];
+ 	
 	/*
   foreach ($element as $key) {
     $row = array();
@@ -236,7 +237,10 @@ function theme_pdf_forms_mapping_table($vars){
     $nrows[] = $row;
   }
 	*/
-
+	
+	// Sorting rows according to their weights
+	$keys = array_map(function($val) { return $val['fieldweight']['#value']; }, $rows);
+	array_multisort($keys, $rows);
 
 	foreach($rows as $index => $row){
     $nrow = array();	
