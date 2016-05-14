@@ -283,6 +283,7 @@ function pdf_forms_entity_access($op, $entity = null, $account = null, $entity_t
 function pdf_forms_entity_info() {
   $info['pdf_form'] = array(
     'label' => t('PDF Form'),
+    'module' => 'pdf_forms',
     'controller class' => 'PDFFormsController',
     'base table' => 'pdf_forms_data',
     'uri callback' => 'pdf_forms_uri',

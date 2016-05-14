@@ -1,40 +1,4 @@
 <?php
-
-/**
- * Implemented hook_entity_property_info()
- */
-function pdf_forms_entity_property_info() {
-  $info = array();
-  // Add meta-data about the basic node properties.
-  $properties = &$info['pdf_form']['properties'];
-
-  $properties['sid'] = array(
-    'label' => t("Submission ID"),
-    'type' => 'integer',
-    'description' => t("The unique ID of the node."),
-    'schema field' => 'submission_id',
-  );
-  $properties['bundle'] = array(
-    'label' => t("PDF Form Template Bundle"),
-    'type' => 'varchar',
-    'description' => t("The PDF form template bundle this submission belongs to"),
-    'schema field' => 'bundle',
-  );
-  $properties['author'] = array(
-    'label' => t("Author"),
-    'type' => 'user',
-    'description' => t("The author of the node."),
- // @TODO: write getters and setters for assign permissions to submissions
- //   'getter callback' => 'entity_metadata_node_get_properties',
- //   'setter callback' => 'entity_metadata_node_set_properties',
- //   'setter permission' => 'administer nodes',
-    'required' => TRUE,
-    'schema field' => 'uid',
-  );
-  // @TODO: Date, PDF Data submission data itself, fid (entity refernece)
-  return $info;
-}
-
 /**
  * Returns the title for a provided pdf_form_type.
  */
