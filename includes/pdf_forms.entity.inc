@@ -169,10 +169,20 @@ function pdf_forms_type_edit($form, &$form_state, $pdf_form_type = NULL) {
     if ($fields = pdf_forms_fields($file)) {
       $form['fields']['table'] = array(
         '#tree' => TRUE,
-        '#theme' => 'table',
-        '#header' => array(
+        '#theme' => 'pdf_forms_mapping_table',
+        /*'#header' => array(
           t('Field Name'), t('Field Type'), t('Field Prefix'), t('Field Value'), t('Field Suffix'), t('Field Description'), t('Weight'),
-        ),
+        ),*/
+        '#header' => array(
+          array('data' => t('Field Name')),
+					array('data' => t('Field Type')),
+					array('data' => t('Field Prefix')),
+					array('data' => t('Field Value')),
+					array('data' => t('Field Suffix')),
+					array('data' => t('Field Description')),
+					array('data' => t('Weight')),
+        ),				
+
         '#rows' => array(),
       );
 
@@ -254,9 +264,10 @@ function pdf_forms_type_edit($form, &$form_state, $pdf_form_type = NULL) {
 
         $fieldweight = array(
           '#id' => 'fields-table-' . $id . '-fieldweight',
-          '#type' => 'weight',
-          '#default_value' => isset($field_map_data[$id]) ? $field_map_data[$id]['weight'] : 0,
-					//'#attributes' => array('class' => 'weight'),
+          '#type' => 'textfield',
+					'#size' => 3,
+					'#default_value' => isset($field_map_data[$id]) ? $field_map_data[$id]['weight'] : 0,
+					'#attributes' => array('class' => array('fweight', 'item-row-weight')),
         );				
 			
         $machine_name = array(
@@ -282,17 +293,17 @@ function pdf_forms_type_edit($form, &$form_state, $pdf_form_type = NULL) {
           'fieldinfo' => &$fieldinfo,
         );
 
-        $form['fields']['table']['#rows'][] = array(
-            array('data' => &$field_name),
-            array('data' => &$field_type),
-            array('data' => &$prefix),
-            array('data' => &$value),
-            array('data' => &$suffix),
-						array('data' => &$fielddesc),
-						array('data' => &$fieldweight),
-						array('data' => &$fieldinfo),
+        $form['fields']['table']['#rows'][$id] = array(
+          'name' => &$field_name,
+          'type' => &$field_type,
+          'prefix' => &$prefix,
+          'value' => &$value,
+          'suffix' => &$suffix,
+					'fielddesc' => &$fielddesc,
+					'fieldweight' => &$fieldweight,
+          'fieldinfo' => &$fieldinfo,
         );
-
+		
         unset($field_name);
         unset($field_type);
         unset($prefix);
@@ -522,7 +533,7 @@ function pdf_forms_edit($form, &$form_state, $bundle = NULL) {
           $vars[$option] = $option;
         }
         $form[$fname]['#options'] = $vars;
-
+				if(in_array("Off", $options)) $form[$fname]['#default_value'] = 'Off';
       }
       else {
         $form[$fname]['#type'] = "textfield";
