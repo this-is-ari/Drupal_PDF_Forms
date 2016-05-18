@@ -265,7 +265,7 @@ function pdf_forms_pdftk_generate_completed_form($entity, $data_entities = NULL,
   // Load up the field map data.
   $map = array();
   $map = pdf_forms_pdftk_get_field_map($entity, $token_objects);
-
+dpm($map);
   // Create the xfdf.
   module_load_include('inc', 'pdf_forms', 'includes/pdf_forms.xfdf');
 
@@ -274,12 +274,12 @@ function pdf_forms_pdftk_generate_completed_form($entity, $data_entities = NULL,
 
   $file_schema = file_default_scheme();
   $destination = "{$file_schema}://{$filename}";
-
+dpm($data_entities);
   $XFDF = pdf_forms_generate_xfdf("{$filename}.pdf.xfdf", $data_entities, 'UTF-8');
-
+dpm($XFDF);
   // Store data to a file.
   $xfdffile = file_save_data($XFDF, "{$destination}.pdf.xfdf", FILE_EXISTS_REPLACE);
-
+dpm($xfdffile);
   file_usage_add($xfdffile, 'pdf_forms', $entity->bundle, $entity->submission_id);
 
   $pdftk = variable_get('pdf_forms_pdftk_path', 'pdftk');
@@ -294,7 +294,8 @@ function pdf_forms_pdftk_generate_completed_form($entity, $data_entities = NULL,
   ob_start();
   passthru($command);
   $response = ob_get_clean();
-
+dpm($command);	
+dpm($response);
   $file = file_save_data($response, "{$destination}.pdf", FILE_EXISTS_REPLACE);
   file_usage_add($file, 'pdf_forms', $entity->bundle, $entity->submission_id);
   $file->pdfdata = $map;

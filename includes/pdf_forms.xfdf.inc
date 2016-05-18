@@ -8,7 +8,7 @@ function pdf_forms_generate_xfdf($file, $map, $encode = 'UTF-8') {
     '<xfdf xmlns="http://ns.adobe.com/xfdf/" xml:space="preserve">' . "\n" .
     '<fields>' . "\n";
   foreach ($map as $name => $value) {
-    $name = str_replace('-', ' ', $name);
+    //$name = str_replace('-', ' ', $name);
     $data .= '<field name="' . htmlspecialchars($name) . '"><value>' . htmlspecialchars($value) . '</value></field>' . "\n";
   }
   $data .= '</fields>' . "\n" .

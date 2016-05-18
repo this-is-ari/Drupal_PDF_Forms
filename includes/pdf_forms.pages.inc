@@ -166,54 +166,63 @@ function pdf_forms_type_submission_edit($form, &$form_state, $sid) {
   if (!isset($form_state['storage']['confirm'])) {
     $submission = pdf_forms_load($sid);
     $map = array();
-    $results = db_query('SELECT machine_name, type, fieldinfo FROM {pdf_forms_field_mapping} WHERE bundle = :bundle ORDER BY weight ASC', array(':bundle' => $submission->bundle));
+    $results = db_query('SELECT machine_name, type, pdf_page, fieldinfo FROM {pdf_forms_field_mapping} WHERE bundle = :bundle ORDER BY weight ASC', array(':bundle' => $submission->bundle));
     foreach ($results as $field_map) {
-      $map[$field_map->machine_name]['type'] = $field_map->type;
-      $map[$field_map->machine_name]['info'] = unserialize($field_map->fieldinfo);
+      $map[$field_map->pdf_page][$field_map->machine_name]['type'] = $field_map->type;
+      $map[$field_map->pdf_page][$field_map->machine_name]['info'] = unserialize($field_map->fieldinfo);
     }
 
     $pdfdata = unserialize($submission->pdfdata);
 
     // $file = file_load($submission->fid);.
     module_load_include('inc', 'pdf_forms', 'includes/pdf_forms.pdftk');
-    if (count($pdfdata)) {
-      foreach ($pdfdata as $fname => $fvalue) {
-        if ($map[$fname]['type'] == "Button") {
-          $form[$fname]['#type'] = "checkbox";
-        }
-        elseif ($map[$fname]['type'] == "Radio") {
-          $form[$fname]['#type'] = "radios";
-          $options = $map[$fname]['info']['options'];
-          if (!in_array($fvalue, $options)) {
-            $fvalue = in_array("Off", $options) ? "Off" : NULL;
-          }
-					$vars = array();
-          foreach ($options as $option) {
-            $vars[$option] = $option;
-          }
-          $form[$fname]['#options'] = $vars;
+    if (count($map)) {
+			foreach($map as $fieldset => $field){
+				$form['fieldset'.$fieldset] = array(
+					'#type' => 'fieldset',
+					'#title' => t('Fieldset '.$fieldset),
+					'#collapsible' => TRUE, 
+					'#collapsed' => isset($collapsed) ? TRUE : FALSE,
+				);			
+				foreach ($field as $fname => $fvalue) {
+					if ($fvalue['type'] == "Button") {
+						$form['fieldset'.$fieldset][$fname]['#type'] = "checkbox";
+					}
+					elseif ($fvalue['type'] == "Radio") {
+						$form['fieldset'.$fieldset][$fname]['#type'] = "radios";
+						$options = $fvalue['info']['options'];
+						if (!in_array($pdfdata[$fname], $options)) {
+							$pdfdata[$fname] = in_array("Off", $options) ? "Off" : NULL;
+						}
+						$vars = array();
+						foreach ($options as $option) {
+							$vars[$option] = $option;
+						}
+						$form['fieldset'.$fieldset][$fname]['#options'] = $vars;
 
-        }
-        else {
-          $form[$fname]['#type'] = "textfield";
-					$form[$fname]['#maxlength'] = "256";
-        }
-				// Check required field
-				if(isset($map[$fname]['info']['required'])){
-					$form[$fname]['#required'] = TRUE;
-				}		
-				// Check readonly field
-				if(isset($map[$fname]['info']['readonly'])){
-					$form[$fname]['#disabled'] = $map[$fname]['info']['readonly'];
-				}				
-				// Add field description
-				if(isset($map[$fname]['info']['tooltip'])){
-					$form[$fname]['#description'] = $map[$fname]['info']['tooltip'];
+					}
+					else {
+						$form['fieldset'.$fieldset][$fname]['#type'] = "textfield";
+						$form['fieldset'.$fieldset][$fname]['#maxlength'] = "256";
+					}
+					// Check required field
+					if(isset($fvalue['info']['required'])){
+						$form['fieldset'.$fieldset][$fname]['#required'] = TRUE;
+					}		
+					// Check readonly field
+					if(isset($fvalue['info']['readonly'])){
+						$form['fieldset'.$fieldset][$fname]['#disabled'] = $fvalue['info']['readonly'];
+					}				
+					// Add field description
+					if(isset($fvalue['info']['tooltip'])){
+						$form['fieldset'.$fieldset][$fname]['#description'] = $fvalue['info']['tooltip'];
+					}
+					$form['fieldset'.$fieldset][$fname]['#title'] = $fname;
+					$form['fieldset'.$fieldset][$fname]['#default_value'] = $pdfdata[$fname];
+
 				}
-        $form[$fname]['#title'] = $fname;
-        $form[$fname]['#default_value'] = $fvalue;
-
-      }
+				$collapsed = TRUE;
+			}
     }
     else {
       $form['nofields'] = array(
