@@ -62,7 +62,8 @@ function pdf_forms_schema() {
         'type' => 'text'
       ),
       'pdf_page' => array(
-        'type' => 'int'
+        'type' => 'int',
+				'default' => 1
       ),
       'top' => array(
         'type' => 'int'

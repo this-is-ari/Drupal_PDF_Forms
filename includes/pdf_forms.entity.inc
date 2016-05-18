@@ -145,6 +145,7 @@ function pdf_forms_type_edit($form, &$form_state, $pdf_form_type = NULL) {
 					array('data' => t('Field Suffix')),
 					array('data' => t('Field Description')),
 					array('data' => t('Weight')),
+					array('data' => t('Page num')),
         ),				
 
         '#rows' => array(),
@@ -167,6 +168,7 @@ function pdf_forms_type_edit($form, &$form_state, $pdf_form_type = NULL) {
             'suffix' => $row->suffix,
             'value' => $row->value,
 						'weight' => $row->weight,
+						'pagenum' => $row->pdf_page,
 						'description' => isset($row->fieldinfo['tooltip']) ? $row->fieldinfo['tooltip'] : '',
           );
         }
@@ -232,7 +234,14 @@ function pdf_forms_type_edit($form, &$form_state, $pdf_form_type = NULL) {
 					'#size' => 3,
 					'#default_value' => isset($field_map_data[$id]) ? $field_map_data[$id]['weight'] : 0,
 					'#attributes' => array('class' => array('fweight', 'item-row-weight')),
-        );				
+        );	
+				
+        $fieldpage = array(
+          '#id' => 'fields-table-' . $id . '-fieldpage',
+          '#type' => 'textfield',
+					'#size' => 3,
+					'#default_value' => isset($field_map_data[$id]) ? $field_map_data[$id]['pagenum'] : 1,
+        );					
 			
         $machine_name = array(
           '#id' => 'fields-table-' . $id . '-machine-name',
@@ -253,6 +262,7 @@ function pdf_forms_type_edit($form, &$form_state, $pdf_form_type = NULL) {
           'suffix' => &$suffix,
 					'fielddesc' => &$fielddesc,
 					'fieldweight' => &$fieldweight,
+					'pagenum' => &$fieldpage,
           'machine_name' => &$machine_name,
           'fieldinfo' => &$fieldinfo,
         );
@@ -265,6 +275,7 @@ function pdf_forms_type_edit($form, &$form_state, $pdf_form_type = NULL) {
           'suffix' => &$suffix,
 					'fielddesc' => &$fielddesc,
 					'fieldweight' => &$fieldweight,
+					'pagenum' => &$fieldpage,
           'fieldinfo' => &$fieldinfo,
         );
 		
@@ -275,6 +286,7 @@ function pdf_forms_type_edit($form, &$form_state, $pdf_form_type = NULL) {
         unset($suffix);
 				unset($fielddesc);
 				unset($fieldweight);
+				unset($fieldpage);
         unset($machine_name);
         unset($fieldinfo);
       }
@@ -373,6 +385,7 @@ function pdf_forms_type_edit_submit($form, &$form_state) {
 			'suffix' => $field['suffix'],
 			'type' => $field['type'],
 			'weight' => (int)$field['fieldweight'],
+			'pdf_page' => (int)$field['pagenum'],
 			'fieldinfo' => $field['fieldinfo'],
 		);
 
@@ -477,48 +490,57 @@ function pdf_forms_create($bundle) {
 function pdf_forms_edit($form, &$form_state, $bundle = NULL) {
   $form_state['bundle'] = $bundle;
   $map = array();
-  $results = db_query('SELECT machine_name, type, value, fieldinfo FROM {pdf_forms_field_mapping} WHERE bundle = :bundle ORDER BY weight ASC', array(':bundle' => $bundle));
+  $results = db_query('SELECT machine_name, type, value, pdf_page, fieldinfo FROM {pdf_forms_field_mapping} WHERE bundle = :bundle ORDER BY weight ASC', array(':bundle' => $bundle));
   foreach ($results as $field_map) {
-    $map[$field_map->machine_name]['type'] = $field_map->type;
-		$map[$field_map->machine_name]['value'] = $field_map->value;
-    $map[$field_map->machine_name]['info'] = unserialize($field_map->fieldinfo);
+    $map[$field_map->pdf_page][$field_map->machine_name]['type'] = $field_map->type;
+		$map[$field_map->pdf_page][$field_map->machine_name]['value'] = $field_map->value;
+    $map[$field_map->pdf_page][$field_map->machine_name]['info'] = unserialize($field_map->fieldinfo);
   }
 
   if (count($map)) {
-    foreach ($map as $fname => $fvalue) {
-      if ($map[$fname]['type'] == "Button") {
-        $form[$fname]['#type'] = "checkbox";
-      }
-      elseif ($map[$fname]['type'] == "Radio") {
-        $form[$fname]['#type'] = "radios";
-        $options = $map[$fname]['info']['options'];
-				$vars = array();
-        foreach ($options as $option) {
-          $vars[$option] = $option;
-        }
-        $form[$fname]['#options'] = $vars;
-				if(in_array("Off", $options)) $form[$fname]['#default_value'] = 'Off';
-      }
-      else {
-        $form[$fname]['#type'] = "textfield";
-				$form[$fname]['#maxlength'] = "256";
-				$form[$fname]['#default_value'] = $map[$fname]['value'];
-      }
-			// Check required field
-			if(isset($map[$fname]['info']['required'])){
-				$form[$fname]['#required'] = TRUE;				
+		foreach($map as $fieldset => $field){
+			$form['fieldset'.$fieldset] = array(
+				'#type' => 'fieldset',
+				'#title' => t('Fieldset '.$fieldset),
+				'#collapsible' => TRUE, 
+				'#collapsed' => isset($collapsed) ? TRUE : FALSE,
+			);		
+			foreach ($field as $fname => $fvalue) {
+				if ($field[$fname]['type'] == "Button") {
+					$form['fieldset'.$fieldset][$fname]['#type'] = "checkbox";
+				}
+				elseif ($field[$fname]['type'] == "Radio") {
+					$form['fieldset'.$fieldset][$fname]['#type'] = "radios";
+					$options = $field[$fname]['info']['options'];
+					$vars = array();
+					foreach ($options as $option) {
+						$vars[$option] = $option;
+					}
+					$form['fieldset'.$fieldset][$fname]['#options'] = $vars;
+					if(in_array("Off", $options)) $form['fieldset'.$fieldset][$fname]['#default_value'] = 'Off';
+				}
+				else {
+					$form['fieldset'.$fieldset][$fname]['#type'] = "textfield";
+					$form['fieldset'.$fieldset][$fname]['#maxlength'] = "256";
+					$form['fieldset'.$fieldset][$fname]['#default_value'] = $field[$fname]['value'];
+				}
+				// Check required field
+				if(isset($field[$fname]['info']['required'])){
+					$form['fieldset'.$fieldset][$fname]['#required'] = TRUE;				
+				}
+				// Check readonly field
+				if(isset($field[$fname]['info']['readonly'])){
+					$form['fieldset'.$fieldset][$fname]['#disabled'] = $field[$fname]['info']['readonly'];
+				}			
+				// Add field description
+				if(isset($field[$fname]['info']['tooltip'])){
+					$form['fieldset'.$fieldset][$fname]['#description'] = $field[$fname]['info']['tooltip'];
+				}
+				$form['fieldset'.$fieldset][$fname]['#title'] = $fname;
+				
 			}
-			// Check readonly field
-			if(isset($map[$fname]['info']['readonly'])){
-				$form[$fname]['#disabled'] = $map[$fname]['info']['readonly'];
-			}			
-			// Add field description
-			if(isset($map[$fname]['info']['tooltip'])){
-				$form[$fname]['#description'] = $map[$fname]['info']['tooltip'];
-			}
-      $form[$fname]['#title'] = $fname;
-      
-    }
+			$collapsed = TRUE;
+		}
   }
   else {
     $form['nofields'] = array(
