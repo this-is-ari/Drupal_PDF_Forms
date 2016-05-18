@@ -265,7 +265,6 @@ function pdf_forms_pdftk_generate_completed_form($entity, $data_entities = NULL,
   // Load up the field map data.
   $map = array();
   $map = pdf_forms_pdftk_get_field_map($entity, $token_objects);
-dpm($map);
   // Create the xfdf.
   module_load_include('inc', 'pdf_forms', 'includes/pdf_forms.xfdf');
 
