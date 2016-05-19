@@ -386,7 +386,7 @@ function pdf_forms_type_edit_submit($form, &$form_state) {
 			'suffix' => $field['suffix'],
 			'type' => $field['type'],
 			'weight' => (int)$field['fieldweight'],
-			'pdf_page' => (int)$field['pagenum'],
+			'pdf_page' => $field['pagenum'],
 			'fieldinfo' => $field['fieldinfo'],
 		);
 
@@ -533,7 +533,7 @@ function pdf_forms_edit($form, &$form_state, $bundle = NULL) {
 				// Check readonly field
 				if(isset($field[$fname]['info']['readonly'])){
 					$formfield['#disabled'] = $field[$fname]['info']['readonly'];
-					//$formfield['#type'] = "hidden";
+					$formfield['#type'] = "hidden";
 					$hiddenfield = TRUE;
 				}			
 				// Add field description

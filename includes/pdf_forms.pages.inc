@@ -213,7 +213,7 @@ function pdf_forms_type_submission_edit($form, &$form_state, $sid) {
 					// Check readonly field
 					if(isset($fvalue['info']['readonly'])){
 						$formfield['#disabled'] = $fvalue['info']['readonly'];
-						//$form['fieldset'.$fieldset][$fname]['#type'] = "hidden";
+						$formfield['#type'] = "hidden";
 						$hiddenfield = TRUE;
 					}				
 					// Add field description
