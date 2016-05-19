@@ -181,7 +181,8 @@ function pdf_forms_type_edit($form, &$form_state, $pdf_form_type = NULL) {
         }
 				$finfo = unserialize($field['fieldinfo']);
 
-        $id = str_replace(' ', '-', $field['name']);
+        $id = str_replace(' ', '_', $field['name']);
+				//$id = $field['name'];
         $id = trim($id);
 
         $field_name = array(
@@ -385,7 +386,7 @@ function pdf_forms_type_edit_submit($form, &$form_state) {
 			'suffix' => $field['suffix'],
 			'type' => $field['type'],
 			'weight' => (int)$field['fieldweight'],
-			'pdf_page' => (int)$field['pagenum'],
+			'pdf_page' => $field['pagenum'],
 			'fieldinfo' => $field['fieldinfo'],
 		);
 
@@ -506,43 +507,50 @@ function pdf_forms_edit($form, &$form_state, $bundle = NULL) {
 				'#collapsed' => isset($collapsed) ? TRUE : FALSE,
 			);		
 			foreach ($field as $fname => $fvalue) {
-				
+				$formfield = array();
 				if ($field[$fname]['type'] == "Button") {
-					$form['fieldset'.$fieldset]['fields'][$fname]['#type'] = "checkbox";
+					$formfield['#type'] = "checkbox";
 				}
 				elseif ($field[$fname]['type'] == "Radio") {
-					$form['fieldset'.$fieldset]['fields'][$fname]['#type'] = "radios";
+					$formfield['#type'] = "radios";
 					$options = $field[$fname]['info']['options'];
 					$vars = array();
 					foreach ($options as $option) {
 						$vars[$option] = $option;
 					}
-					$form['fieldset'.$fieldset]['fields'][$fname]['#options'] = $vars;
-					if(in_array("Off", $options)) $form['fieldset'.$fieldset]['fields'][$fname]['#default_value'] = 'Off';
+					$formfield['#options'] = $vars;
+					if(in_array("Off", $options)) $formfield['#default_value'] = 'Off';
 				}
 				else {
-					$form['fieldset'.$fieldset]['fields'][$fname]['#type'] = "textfield";
-					$form['fieldset'.$fieldset]['fields'][$fname]['#maxlength'] = "256";
-					$form['fieldset'.$fieldset]['fields'][$fname]['#default_value'] = $field[$fname]['value'];
+					$formfield['#type'] = "textfield";
+					$formfield['#maxlength'] = "256";
+					$formfield['#default_value'] = $field[$fname]['value'];
 				}
 				// Check required field
 				if(isset($field[$fname]['info']['required'])){
-					$form['fieldset'.$fieldset]['fields'][$fname]['#required'] = TRUE;				
+					$formfield['#required'] = TRUE;				
 				}
 				// Check readonly field
 				if(isset($field[$fname]['info']['readonly'])){
-					$form['fieldset'.$fieldset]['fields'][$fname]['#disabled'] = $field[$fname]['info']['readonly'];
-					$form['fieldset'.$fieldset]['fields'][$fname]['#type'] = "hidden";
+					$formfield['#disabled'] = $field[$fname]['info']['readonly'];
+					$formfield['#type'] = "hidden";
+					$hiddenfield = TRUE;
 				}			
 				// Add field description
 				if(isset($field[$fname]['info']['tooltip'])){
-					$form['fieldset'.$fieldset]['fields'][$fname]['#description'] = $field[$fname]['info']['tooltip'];
+					$formfield['#description'] = $field[$fname]['info']['tooltip'];
 				}
-				$form['fieldset'.$fieldset]['fields'][$fname]['#title'] = $fname;
-				
+				$formfield['#title'] = $fname;
+				if(isset($hiddenfield)){
+					$form['fieldset'.$fieldset]['hiddenfields'][$fname] = $formfield;
+					unset($hiddenfield);
+				}
+				else{
+					$form['fieldset'.$fieldset]['fields'][$fname] = $formfield;
+				}
 			}
 			if(!isset($form['fieldset'.$fieldset]['fields'])){
-				unset($form['fieldset'.$fieldset]);
+				hide($form['fieldset'.$fieldset]);
 			} 
 			$collapsed = TRUE;
 		}
