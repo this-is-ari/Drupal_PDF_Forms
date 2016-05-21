@@ -311,20 +311,24 @@ function pdf_forms_pdftk_get_field_map($entity, $token_objects) {
   $results = db_query('SELECT * FROM {pdf_forms_field_mapping} WHERE bundle = :bundle', array(':bundle' => $entity->bundle));
 
   foreach ($results as $field_map) {
+
     // For some reason token_replace doesn't like being passed an array of entities (doing so results in it ignoring relation tokens)
     // So instead we iterate through each entity type, running token_replace for each entity seperatly.
-    foreach ($token_objects as $entity_type => $entity_object) {
-      $token_object_array = array($entity_type => $entity_object);
-      if (!empty($field_map->prefix)) {
-        $field_map->prefix = token_replace($field_map->prefix, $token_object_array);
-      }
-      if (!empty($field_map->value)) {
-        $field_map->value = token_replace($field_map->value, $token_object_array);
-      }
-      if (!empty($field_map->suffix)) {
-        $field_map->suffix = token_replace($field_map->suffix, $token_object_array);
-      }
-    }
+      
+		if (!empty($field_map->prefix)) {
+			$field_map->prefix = token_replace($field_map->prefix, $token_objects);
+		}
+		if (!empty($field_map->value)) {
+			$field_map->value = token_replace($field_map->value, $token_objects);
+
+			if($field_map->type == "Math"){					
+				$field_map->value = eval('return '.$field_map->value.';');
+			}
+		}
+		if (!empty($field_map->suffix)) {
+			$field_map->suffix = token_replace($field_map->suffix, $token_objects);
+		}
+    
 
     $map[$field_map->machine_name] = $field_map->prefix . $field_map->value . $field_map->suffix;
   }

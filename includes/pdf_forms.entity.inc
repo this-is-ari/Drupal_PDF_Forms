@@ -131,6 +131,9 @@ function pdf_forms_type_edit($form, &$form_state, $pdf_form_type = NULL) {
 
     module_load_include('inc', 'pdf_forms', 'includes/pdf_forms.pdftk');
     if ($fields = pdf_forms_fields($file)) {
+			// Options for textfield type
+			$typeoptions = array('Text' => 'Text', 'Math' => 'Math');
+		
       $form['fields']['table'] = array(
         '#tree' => TRUE,
         '#theme' => 'pdf_forms_mapping_table',
@@ -164,6 +167,7 @@ function pdf_forms_type_edit($form, &$form_state, $pdf_form_type = NULL) {
 					
 					$row->fieldinfo = unserialize($row->fieldinfo);
           $field_map_data[$row->machine_name] = array(
+						'type' => $row->type,
             'prefix' => $row->prefix,
             'suffix' => $row->suffix,
             'value' => $row->value,
@@ -190,15 +194,27 @@ function pdf_forms_type_edit($form, &$form_state, $pdf_form_type = NULL) {
           '#type' => 'markup',
           '#markup' => $field['name'],
         );
-
-        $field_type = array(
-          '#id' => 'fields-table-' . $id . '-type',
-          '#type' => 'textfield',
-          '#default_value' => $field['type'],
-          '#size' => '6',
-          '#attributes' => array('readonly' => 'readonly'),
-        );
-
+				// Detect field type
+				$ftype = isset($field_map_data[$id]) ? $field_map_data[$id]['type'] : $field['type'];
+				if(in_array($ftype, $typeoptions)){
+					$field_type = array(
+						'#id' => 'fields-table-' . $id . '-type',
+						'#type' => 'select',
+						'#options' => $typeoptions,
+						'#default_value' => $ftype,
+						'#required' => TRUE,
+						//'#attributes' => array('readonly' => 'readonly'),
+					);				
+				}
+				else{				
+					$field_type = array(
+						'#id' => 'fields-table-' . $id . '-type',
+						'#type' => 'textfield',
+						'#default_value' => $ftype,
+						'#size' => '6',
+						'#attributes' => array('readonly' => 'readonly'),
+					);
+				}
         $prefix = array(
           '#id' => 'fields-table-' . $id . '-prefix',
           '#type' => 'textarea',
