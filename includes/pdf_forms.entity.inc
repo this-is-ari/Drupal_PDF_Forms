@@ -556,7 +556,10 @@ function pdf_forms_edit($form, &$form_state, $bundle = NULL) {
 				if(isset($field[$fname]['info']['tooltip'])){
 					$formfield['#description'] = $field[$fname]['info']['tooltip'];
 				}
-				$formfield['#title'] = $fname;
+				//replace underscores with spaces in field names. Also make first letter capital
+				$preprocessed_fname = ucfirst(str_replace('_', ' ', $fname));
+
+				$formfield['#title'] = $preprocessed_fname;
 				if(isset($hiddenfield)){
 					$form['fieldset'.$fieldset]['hiddenfields'][$fname] = $formfield;
 					unset($hiddenfield);
