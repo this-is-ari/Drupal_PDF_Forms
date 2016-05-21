@@ -518,7 +518,7 @@ function pdf_forms_edit($form, &$form_state, $bundle = NULL) {
 		foreach($map as $fieldset => $field){
 			$form['fieldset'.$fieldset] = array(
 				'#type' => 'fieldset',
-				'#title' => t('Fieldset '.$fieldset),
+				'#title' => t($fieldset),
 				'#collapsible' => TRUE, 
 				'#collapsed' => isset($collapsed) ? TRUE : FALSE,
 			);		
