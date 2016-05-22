@@ -220,7 +220,7 @@ function pdf_forms_type_submission_edit($form, &$form_state, $sid) {
 					if(isset($fvalue['info']['tooltip'])){
 						$formfield['#description'] = $fvalue['info']['tooltip'];
 					}
-					$formfield['#title'] = $fname;
+					$formfield['#title'] = ucfirst(str_replace('^', ' ', $fname));
 					$formfield['#default_value'] = $pdfdata[$fname];
 					
 					if(isset($hiddenfield)){
