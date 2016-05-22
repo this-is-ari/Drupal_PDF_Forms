@@ -185,7 +185,7 @@ function pdf_forms_type_edit($form, &$form_state, $pdf_form_type = NULL) {
         }
 				$finfo = unserialize($field['fieldinfo']);
 
-        $id = str_replace(' ', '_', $field['name']);
+        $id = str_replace(' ', '^', $field['name']);
 				//$id = $field['name'];
         $id = trim($id);
 
@@ -557,7 +557,7 @@ function pdf_forms_edit($form, &$form_state, $bundle = NULL) {
 					$formfield['#description'] = $field[$fname]['info']['tooltip'];
 				}
 				//replace underscores with spaces in field names. Also make first letter capital
-				$preprocessed_fname = ucfirst(str_replace('_', ' ', $fname));
+				$preprocessed_fname = ucfirst(str_replace('^', ' ', $fname));
 
 				$formfield['#title'] = $preprocessed_fname;
 				if(isset($hiddenfield)){
