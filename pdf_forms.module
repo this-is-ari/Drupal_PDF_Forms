@@ -159,8 +159,9 @@ function pdf_forms_menu() {
     'access arguments' => array('view', 2),
     'file' => 'includes/pdf_forms.entity.inc',		
   );	
-	
-	$items['pdf_form/submissions/%/revisions'] = array(
+/*
+//@TODO - Finish ability to access revisions	
+  $items['pdf_form/submissions/%/revisions'] = array(
     'title' => t('Revisions'),
 		'type' => MENU_LOCAL_TASK,
     'page callback' => 'pdf_forms_submission_revisions',
@@ -170,8 +171,8 @@ function pdf_forms_menu() {
     'file' => 'includes/pdf_forms.entity.inc',		
   );
 	
-	$items['pdf_form/submissions/%/revisions/%/view'] = array(
-    'title' => t('Revisions'),
+  $items['pdf_form/submissions/%/revisions/%/view'] = array(
+    'title' => t('View Revision'),
 		'type' => MENU_LOCAL_TASK,
     'page callback' => 'pdf_forms_submission_revisions_view',
     'page arguments' => array(2),		
@@ -179,7 +180,7 @@ function pdf_forms_menu() {
     'access arguments' => array('view', 2),
     'file' => 'includes/pdf_forms.entity.inc',		
   );	
-	
+*/	
   /* Submission Link */
   $items['pdf_form_submission/%pdf_form'] = array(
     'title callback' => 'pdf_forms_title',
