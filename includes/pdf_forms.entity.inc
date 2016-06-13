@@ -610,6 +610,48 @@ function pdf_forms_edit_submit($form, &$form_state) {
   $form_state['redirect'] = "pdf_form/submissions/{$submission->submission_id}/edit";
 }
 
+/*
+ * Callback function for submission revisions list
+ */
+function pdf_forms_submission_revisions($submission_id, $type = 'pdf_form'){
+	$info = entity_get_info($type);
+	$submission = pdf_forms_load($submission_id);
+	dpm($submission);
+  $revisions = db_select($info['revision table'], 'r')
+    ->fields('r', array('vid', 'uid', 'changed'))
+    ->condition($info['entity keys']['id'], $submission->submission_id)
+    ->execute()
+    ->fetchAllAssoc($info['entity keys']['revision']);
+	dpm($revisions);	
+	$header = array(
+		t('Changed'),
+		t('User'),
+		array('data' => t('Operations'), 'colspan' => 2),
+	);
+	$rows = array();
+	foreach($revisions as $key => $revision){
+    $row = array();
+    $operations = array();	
+		$user = user_load($revision->uid);
+		$row[] = l(format_date($revision->changed, 'short'), 'pdf_form/submissions/'.$submission_id.'/revisions/'.$revision->vid.'/view');
+		$row[] = l($user->name, 'user/'.$user->uid);
+		$operations[] = l(t('revert'), 'pdf_form/submissions/'.$submission_id.'/revisions/'.$revision->vid.'/revert');
+		$operations[] = l(t('delete'), 'pdf_form/submissions/'.$submission_id.'/revisions/'.$revision->vid.'/delete');
+		
+		$rows[] = array_merge($row, $operations);
+	}
+	
+  $build['node_revisions_table'] = array(
+    '#theme' => 'table',
+    '#rows' => $rows,
+    '#header' => $header,
+  );	
+	return $build;
+}
+ 
+function pdf_forms_submission_revisions_view($sid, $rid){
+
+} 
 /**
  * Save by calling our controller.
  */
