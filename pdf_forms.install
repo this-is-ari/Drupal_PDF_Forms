@@ -134,7 +134,7 @@ function pdf_forms_schema() {
   );
 	
   $schema['pdf_forms_data_revisions'] = array(
-		'description' => 'Revisions table for submissions.',
+    'description' => 'Revisions table for submissions.',
     'fields' => array(
       'submission_id' => array(
         'type' => 'int',
@@ -143,7 +143,7 @@ function pdf_forms_schema() {
         'default' => 0,
       ),
       'vid' => array(
-        'type' => 'serial',
+        'type' => 'int',
         'unsigned' => TRUE,
         'not null' => TRUE,
       ),			
@@ -158,11 +158,11 @@ function pdf_forms_schema() {
         'default' => 0
       ),
       'pdfdata' => array(
-				'type' => 'text',
-				'size' => 'big'
+	'type' => 'text',
+	'size' => 'big'
       ),			
     ),
-    'primary key' => array('submission_id', 'vid')
+    'primary key' => array('submission_id'),
   );	
 
   return $schema;

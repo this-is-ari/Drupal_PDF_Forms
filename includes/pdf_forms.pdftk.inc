@@ -321,8 +321,16 @@ function pdf_forms_pdftk_get_field_map($entity, $token_objects) {
 		if (!empty($field_map->value)) {
 			$field_map->value = token_replace($field_map->value, $token_objects);
 
-			if($field_map->type == "Math"){					
-				$field_map->value = eval('return '.$field_map->value.';');
+			if($field_map->type == "Addition"){
+				$values = explode("+",$field_map->value);
+				$sum = 0.0;
+				foreach ($values as $value) {
+					$value = preg_replace("/([^0-9\\.])/i", "", $value);
+					if ($value != 0) {
+						$sum+= $value;
+					}
+				}					
+				$field_map->value = $sum;
 			}
 		}
 		if (!empty($field_map->suffix)) {
