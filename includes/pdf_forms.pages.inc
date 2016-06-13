@@ -181,7 +181,7 @@ function pdf_forms_type_submission_edit($form, &$form_state, $sid) {
 			foreach($map as $fieldset => $field){
 				$form['fieldset'.$fieldset] = array(
 					'#type' => 'fieldset',
-					'#title' => t('Fieldset '.$fieldset),
+					'#title' => t($fieldset),
 					'#collapsible' => TRUE, 
 					'#collapsed' => isset($collapsed) ? TRUE : FALSE,
 				);			
