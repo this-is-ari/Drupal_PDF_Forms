@@ -165,6 +165,7 @@ function pdf_forms_submissions_overview() {
 function pdf_forms_type_submission_edit($form, &$form_state, $sid) {
   if (!isset($form_state['storage']['confirm'])) {
     $submission = pdf_forms_load($sid);
+
     $map = array();
     $results = db_query('SELECT machine_name, type, pdf_page, fieldinfo FROM {pdf_forms_field_mapping} WHERE bundle = :bundle ORDER BY weight ASC', array(':bundle' => $submission->bundle));
     foreach ($results as $field_map) {
@@ -282,6 +283,7 @@ function pdf_forms_type_submission_edit_submit($form, &$form_state) {
 
     $file = pdf_forms_pdftk_generate_completed_form($submission, $data);
     $submission->fid = $file->fid;
+		$submission->is_new_revision = TRUE;
     pdf_forms_save($submission);
 		drupal_set_message('Changes saved');
   }

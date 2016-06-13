@@ -13,6 +13,8 @@ class PDFFormsController extends EntityAPIController {
     $entity = new stdClass();
     $entity->submission_id = 0;
     $entity->bundle = $values['bundle'];
+		$entity->is_new_revision = TRUE;
+		$entity->is_new = TRUE;
     return $entity;
 /*
     $entity->bundle = $bundle;
@@ -38,7 +40,15 @@ class PDFFormsController extends EntityAPIController {
     }
 
     $primary_keys = $entity->submission_id ? 'submission_id' : array();
+			
     drupal_write_record('pdf_forms_data', $entity, $primary_keys);
+	
+		// Create revision
+		if(isset($entity->vid)){
+			$entity->vid++;
+		}
+		drupal_write_record('pdf_forms_data_revisions', $entity);
+		
     $invocation = 'entity_insert';
     if (empty($primary_keys)) {
       field_attach_insert('pdf_form', $entity);

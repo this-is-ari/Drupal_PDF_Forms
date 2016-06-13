@@ -101,6 +101,13 @@ function pdf_forms_schema() {
         'type' => 'serial',
         'not null' => TRUE,
       ),
+      'vid' => array(
+        'description' => 'The current {submission_revision}.vid version identifier.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),			
       'uid' => array(
         'type' => 'int',
         'not null' => TRUE,
@@ -125,6 +132,38 @@ function pdf_forms_schema() {
     ),
     'primary key' => array('submission_id')
   );
+	
+  $schema['pdf_forms_data_revisions'] = array(
+		'description' => 'Revisions table for submissions.',
+    'fields' => array(
+      'submission_id' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'vid' => array(
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),			
+      'uid' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0
+      ),
+      'changed' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0
+      ),
+      'pdfdata' => array(
+				'type' => 'text',
+				'size' => 'big'
+      ),			
+    ),
+    'primary key' => array('submission_id', 'vid')
+  );	
 
   return $schema;
 }
