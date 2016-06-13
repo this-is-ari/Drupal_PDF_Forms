@@ -163,7 +163,7 @@ function pdf_forms_schema() {
 	'size' => 'big'
       ),			
     ),
-    'primary key' => array('submission_id', 'vid'),
+    'primary key' => array('vid','submission_id'),
   );	
 
   return $schema;
