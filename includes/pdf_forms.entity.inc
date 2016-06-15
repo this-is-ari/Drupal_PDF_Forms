@@ -537,6 +537,15 @@ function pdf_forms_edit($form, &$form_state, $bundle = NULL) {
 					$formfield['#options'] = $vars;
 					if(in_array("Off", $options)) $formfield['#default_value'] = 'Off';
 				}
+				elseif ($field[$fname]['type'] == "Choice") {
+					$formfield['#type'] = "select";
+					$options = $field[$fname]['info']['options'];
+					$vars = array();
+					foreach ($options as $option) {
+						$vars[$option] = $option;
+					}
+					$formfield['#options'] = $vars;
+				}				
 				else {
 					$formfield['#type'] = "textfield";
 					$formfield['#maxlength'] = "256";

@@ -203,6 +203,19 @@ function pdf_forms_type_submission_edit($form, &$form_state, $sid) {
 						$formfield['#options'] = $vars;
 
 					}
+					elseif ($fvalue['type'] == "Choice") {
+						$formfield['#type'] = "select";
+						$options = $fvalue['info']['options'];
+						if (!in_array($pdfdata[$fname], $options)) {
+							$pdfdata[$fname] = in_array("Off", $options) ? "Off" : NULL;
+						}
+						$vars = array();
+						foreach ($options as $option) {
+							$vars[$option] = $option;
+						}
+						$formfield['#options'] = $vars;
+
+					}					
 					else {
 						$formfield['#type'] = "textfield";
 						$formfield['#maxlength'] = "256";
