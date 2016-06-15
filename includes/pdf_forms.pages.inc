@@ -163,7 +163,7 @@ function pdf_forms_submissions_overview() {
  *
  */
 function pdf_forms_type_submission_edit($form, &$form_state, $sid) {
-  if (!isset($form_state['storage']['confirm'])) {
+  if (!isset($form_state['storage']['confirm']) && !isset($form_state['storage']['cancel_confirm'])) {
     $submission = pdf_forms_load($sid);
 
     $map = array();
@@ -247,6 +247,10 @@ function pdf_forms_type_submission_edit($form, &$form_state, $sid) {
       '#type' => 'submit',
       '#value' => t('Save'),
     );
+    $form['cancel_button'] = array(
+      '#type' => 'submit',
+      '#value' => t('Cancel'),
+    );		
     $form['delete_button'] = array(
       '#type' => 'submit',
       '#value' => t('Delete'),
@@ -254,9 +258,12 @@ function pdf_forms_type_submission_edit($form, &$form_state, $sid) {
 
     return $form;
   }
-  else {
+  elseif(isset($form_state['storage']['confirm'])) {
     return confirm_form($form, "Are you sure you want to delete submission?", current_path());
   }
+  elseif(isset($form_state['storage']['cancel_confirm'])) {
+    return confirm_form($form, "Are you sure you want to clear changes?", current_path(), t('This action cannot be undone.'), t('Cancel confirm'));
+  }	
 }
 
 /**
@@ -298,6 +305,15 @@ function pdf_forms_type_submission_edit_submit($form, &$form_state) {
     entity_get_controller('pdf_form')->delete($submission);
     drupal_goto('admin/content/form_submissions');
   }
+  elseif ($form_state['clicked_button']['#value'] == 'Cancel') {
+    if (!isset($form_state['storage']['cancel_confirm'])) {
+      $form_state['storage']['cancel_confirm'] = TRUE;
+      $form_state['rebuild'] = TRUE;
+    }
+  }
+  elseif ($form_state['clicked_button']['#value'] == 'Cancel confirm') {
+		drupal_set_message("Submission data reloaded");
+  }	
 }
 
 /**
