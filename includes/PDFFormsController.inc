@@ -43,10 +43,14 @@ class PDFFormsController extends EntityAPIController {
 			
     drupal_write_record('pdf_forms_data', $entity, $primary_keys);
 	
-		// Create revision
-		if(isset($entity->vid)){
-			$entity->vid++;
-		}
+    // When saving a new entity revision, unset any existing $entity->vid
+    // to ensure a new revision will actually be created and store the old
+    // revision ID in a separate property for entity hook implementations.
+    if ($entity->vid) {
+      $entity->old_vid = $entity->vid;
+      unset($entity->vid);
+      $entity->timestamp = REQUEST_TIME;
+    }		
 		drupal_write_record('pdf_forms_data_revisions', $entity);
 		
     $invocation = 'entity_insert';

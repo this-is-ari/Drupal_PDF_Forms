@@ -159,11 +159,12 @@ function pdf_forms_schema() {
         'default' => 0
       ),
       'pdfdata' => array(
-	'type' => 'text',
-	'size' => 'big'
+				'type' => 'text',
+				'size' => 'big'
       ),			
     ),
-    'primary key' => array('vid','submission_id'),
+    'primary key' => array('vid'),
+		'indexes' => array('submission_id' => array('submission_id', 'vid'),),
   );	
 
   return $schema;
