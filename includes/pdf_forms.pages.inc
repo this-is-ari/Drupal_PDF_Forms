@@ -264,6 +264,8 @@ function pdf_forms_type_submission_edit($form, &$form_state, $sid) {
       '#type' => 'submit',
       '#value' => t('Cancel'),
 			'#attributes' => array('onclick' => 'if(!confirm("Are you sure you want to discard all changes?")){return false;}'),
+			'#limit_validation_errors' => array(),
+			'#submit' => array(),
     );		
     $form['delete_button'] = array(
       '#type' => 'submit',
