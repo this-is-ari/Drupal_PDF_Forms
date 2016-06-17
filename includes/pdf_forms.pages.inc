@@ -42,7 +42,7 @@ function pdf_forms_admin_settings_validate($form, &$form_state) {
     form_set_error('pdf_forms_pdftk_path', t('Invalid path for PDFTK executable, or invalid permissions.'));
   }
 
-  if (!file_prepare_directory($form_state['values']['pdf_forms_template_path'])) {
+  if (!file_prepare_directory($form_state['values']['pdf_forms_template_path'], FILE_CREATE_DIRECTORY)) {
     form_set_error('pdf_forms_template_path', t('Could not create directory for saving PDF Form Templates.'));
   }
 
