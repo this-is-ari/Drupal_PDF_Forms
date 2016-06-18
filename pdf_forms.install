@@ -159,11 +159,12 @@ function pdf_forms_schema() {
         'default' => 0
       ),
       'pdfdata' => array(
-	'type' => 'text',
-	'size' => 'big'
+				'type' => 'text',
+				'size' => 'big'
       ),			
     ),
-    'primary key' => array('vid','submission_id'),
+    'primary key' => array('vid'),
+		'indexes' => array('submission_id' => array('submission_id', 'vid'),),
   );	
 
   return $schema;
@@ -176,7 +177,7 @@ function pdf_forms_schema() {
 */
 function pdf_forms_enable() {
   $template_path = variable_get('pdf_forms_template_path', 'public://pdf_form_templates');
-  if(!file_prepare_directory($template_path)) {
+  if(!file_prepare_directory($template_path, FILE_CREATE_DIRECTORY)) {
     drupal_set_message('Could not create %path for uploading PDF Form templates.', array('%path' => $template_path));
   }
 }
