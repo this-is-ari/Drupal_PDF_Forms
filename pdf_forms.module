@@ -136,7 +136,8 @@ function pdf_forms_menu() {
   );
 
   $items['pdf_form/submissions/%'] = array(
-    'title' => t('Submission'),
+    'title callback' => 'pdf_forms_submission_title',
+    'title arguments' => array(2),
     'page callback' => 'drupal_get_form',
     'page arguments' => array('pdf_forms_type_submission_edit', 2),
     'access callback' => 'pdf_forms_type_access',
@@ -145,7 +146,8 @@ function pdf_forms_menu() {
   );
 	
   $items['pdf_form/submissions/%/edit'] = array(
-    'title' => t('Submission edit'),
+    'title callback' => 'pdf_forms_submission_title',
+    'title arguments' => array(2),
 		'type' => MENU_DEFAULT_LOCAL_TASK,
 		'weight' => -10,
   );	
