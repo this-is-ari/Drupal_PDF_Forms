@@ -147,8 +147,6 @@ function pdf_forms_menu() {
 	
   $items['pdf_form/submissions/%/edit'] = array(
     'title' => 'Submission',
-		//'title callback' => 'pdf_forms_submission_title',
-    //'title arguments' => array(2),
 		'type' => MENU_DEFAULT_LOCAL_TASK,
 		'weight' => -10,
   );	
