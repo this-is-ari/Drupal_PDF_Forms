@@ -23,7 +23,7 @@ function pdf_forms_type_create() {
   $pdf_form_type->label = '';
   $pdf_form_type->description = '';
   $pdf_form_type->fid = 0;
-  $pdf_form_type->status = FILE_STATUS_PERMANENT;
+  $pdf_form_type->status = 0;
 
   return drupal_get_form('pdf_forms_type_edit', $pdf_form_type);
 }
@@ -371,6 +371,8 @@ function pdf_forms_type_edit_submit($form, &$form_state) {
       }
     }*/
     $file = file_load($values['fid']);
+    $file->status = FILE_STATUS_PERMANENT;
+    file_save($file);
     file_usage_add($file, 'pdf_forms', $pdf_form_type->bundle, 0);
     $pdf_form_type->fid = $values['fid'];
   }
