@@ -227,7 +227,6 @@ function pdf_forms_pdftk_create_completed_form($entity, $data_entities = NULL, $
      			. ' fill_form '
      			. escapeshellarg(drupal_realpath($xfdffile->uri))
      			. ' output - flatten drop_xfa';
-
 		ob_start();
 		passthru($command);
 		$response = ob_get_clean();
