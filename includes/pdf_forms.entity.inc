@@ -141,7 +141,7 @@ function pdf_forms_type_edit($form, &$form_state, $pdf_form_type = NULL) {
     module_load_include('inc', 'pdf_forms', 'includes/pdf_forms.pdftk');
     if ($fields = pdf_forms_fields($file)) {
 			// Options for textfield type
-			$typeoptions = array('Text' => 'Text', 'Addition' => 'Addition');
+			$typeoptions = array('Text' => 'Text', 'Addition' => 'Addition', 'Arithmetic' => 'Arithmetic');
 		
       $form['fields']['table'] = array(
         '#tree' => TRUE,
