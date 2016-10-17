@@ -8,6 +8,15 @@ function pdf_forms_type_title($type) {
 }
 
 /**
+ * Returns the title for a provided submission.
+ */
+function pdf_forms_submission_title($sid) {
+  $submission = pdf_forms_load($sid);
+	$title = pdf_forms_type_title($submission->bundle);
+	return $title;
+}
+
+/**
  * Helper function to detect if a machine name exsits.
  */
 function pdf_forms_type_exists($machine_value) {
@@ -132,7 +141,7 @@ function pdf_forms_type_edit($form, &$form_state, $pdf_form_type = NULL) {
     module_load_include('inc', 'pdf_forms', 'includes/pdf_forms.pdftk');
     if ($fields = pdf_forms_fields($file)) {
 			// Options for textfield type
-			$typeoptions = array('Text' => 'Text', 'Addition' => 'Addition');
+			$typeoptions = array('Text' => 'Text', 'Addition' => 'Addition', 'Arithmetic' => 'Arithmetic');
 		
       $form['fields']['table'] = array(
         '#tree' => TRUE,

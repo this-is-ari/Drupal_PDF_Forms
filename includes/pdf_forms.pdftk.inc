@@ -331,6 +331,12 @@ function pdf_forms_pdftk_get_field_map($entity, $token_objects) {
 				}					
 				$field_map->value = $sum;
 			}
+			if($field_map->type == "Arithmetic"){
+				//dvm("math");
+				$m = new ctools_math_expr;
+				$field_map->value = $m->evaluate($field_map->value);
+				//dvm($field_map->value);
+			}			
 		}
 		if (!empty($field_map->suffix)) {
 			$field_map->suffix = token_replace($field_map->suffix, $token_objects);
