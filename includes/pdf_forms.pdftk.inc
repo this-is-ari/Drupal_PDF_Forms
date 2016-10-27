@@ -321,11 +321,16 @@ function pdf_forms_pdftk_get_field_map($entity, $token_objects) {
 			$field_map->value = token_replace($field_map->value, $token_objects);
 
 			if($field_map->type == "Arithmetic"){
-				//dvm("math");
 				$m = new ctools_math_expr;
+				$m->suppress_errors = TRUE;
 				$field_map->value = $m->evaluate($field_map->value);
-				//dvm($field_map->value);
 			}
+
+			if($field_map->format == "English Notation"){
+			 $field_map->value = preg_replace('/[^0-9.]+/', '', $field_map->value);
+			 $field_map->value = number_format($field_map->value, 2, '.', '');
+			}
+
 		}
 		if (!empty($field_map->suffix)) {
 			$field_map->suffix = token_replace($field_map->suffix, $token_objects);

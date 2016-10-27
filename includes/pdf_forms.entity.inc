@@ -144,7 +144,7 @@ function pdf_forms_type_edit($form, &$form_state, $pdf_form_type = NULL) {
 			$typeoptions = array('Text' => 'Text', 'Arithmetic' => 'Arithmetic');
 
 			// Options for reformating
-			$format_options = array('Raw','Dollars');
+			$format_options = array('Raw','English Notation');
 
       $form['fields']['table'] = array(
         '#tree' => TRUE,
@@ -221,7 +221,7 @@ function pdf_forms_type_edit($form, &$form_state, $pdf_form_type = NULL) {
 					);
 
 					$field_format = array(
-					  '#id' => 'fields-table-' . $id . '-type',
+					  '#id' => 'fields-table-' . $id . '-format',
 					  '#type' => 'select',
 					  '#options' => $format_options,
 					  '#default_value' => $format_options[0],
@@ -238,7 +238,7 @@ function pdf_forms_type_edit($form, &$form_state, $pdf_form_type = NULL) {
 					);
 
 					$field_format = array(
-					  '#id' => 'fields-table-' . $id . '-type',
+					  '#id' => 'fields-table-' . $id . '-format',
 					  '#type' => 'textfield',
 					  '#default_value' => $format_options[0],
 					  '#size' => '6',
