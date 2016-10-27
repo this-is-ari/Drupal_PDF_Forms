@@ -328,7 +328,7 @@ function pdf_forms_pdftk_get_field_map($entity, $token_objects) {
 
 			if($field_map->format == "English Notation"){
 			 $field_map->value = preg_replace('/[^0-9.]+/', '', $field_map->value);
-			 $field_map->value = number_format($field_map->value, 2, '.', '');
+			 $field_map->value = number_format(floatval($field_map->value), 2, '.', '');
 			}
 
 		}

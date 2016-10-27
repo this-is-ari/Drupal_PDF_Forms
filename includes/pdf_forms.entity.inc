@@ -144,7 +144,7 @@ function pdf_forms_type_edit($form, &$form_state, $pdf_form_type = NULL) {
 			$type_options = array('Text' => 'Text', 'Arithmetic' => 'Arithmetic');
 
 			// Options for reformating
-			$format_options = array('Raw','English Notation');
+			$format_options = array('Raw' => 'Raw','English Notation' => 'English Notation');
 
       $form['fields']['table'] = array(
         '#tree' => TRUE,
@@ -208,6 +208,7 @@ function pdf_forms_type_edit($form, &$form_state, $pdf_form_type = NULL) {
         );
 				// Detect field type
 				$ftype = isset($field_map_data[$id]) ? $field_map_data[$id]['type'] : $field['type'];
+        $fformat = isset($field_map_data[$id]) ? $field_map_data[$id]['format'] : $field['format'];
 
 				if(in_array($ftype, $type_options)){
 					$field_type = array(
@@ -222,6 +223,7 @@ function pdf_forms_type_edit($form, &$form_state, $pdf_form_type = NULL) {
 					  '#id' => 'fields-table-' . $id . '-format',
 					  '#type' => 'select',
 					  '#options' => $format_options,
+					  '#default_value' => $fformat,
 					  '#required' => TRUE,
 					);
 				}
@@ -237,7 +239,7 @@ function pdf_forms_type_edit($form, &$form_state, $pdf_form_type = NULL) {
 					$field_format = array(
 					  '#id' => 'fields-table-' . $id . '-format',
 					  '#type' => 'textfield',
-					  '#default_value' => $format_options[0],
+					  '#default_value' => $format_options['Raw'],
 					  '#size' => '6',
 					  '#attributes' => array('readonly' => 'readonly'),
 					);
