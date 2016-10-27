@@ -79,6 +79,12 @@ function pdf_forms_schema() {
       'type' => array(
         'type' => 'text'
       ),		
+      'format' => array(
+        'type' => 'text'
+      ),
+      'signers' => array(
+    	'type' => 'int'
+       ),
       'weight' => array(
         'type' => 'int',
 				'default' => 0

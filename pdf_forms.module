@@ -460,11 +460,12 @@ function pdf_forms_load_multiple($submission_ids = FALSE, $conditions = array(),
 * Preprocess local tasks to pass GET parameters between submission tabs
 */
 function pdf_forms_preprocess_menu_local_task(&$variables) {
-		
     $link = &$variables['element']['#link'];
     // check for $_GET['destination'] because drupal_get_destination() always contains at least the current page
-    if ($link['tab_root'] === 'pdf_form/submissions/%' && !empty($_GET['destination'])) {
-      $link['localized_options']['query'] = drupal_get_destination();
+    if (array_key_exists('tab_root', $link)) {
+      if ($link['tab_root'] === 'pdf_form/submissions/%' && !empty($_GET['destination'])) {
+        $link['localized_options']['query'] = drupal_get_destination();
+      }
     }
 }
 
