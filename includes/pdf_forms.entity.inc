@@ -141,7 +141,7 @@ function pdf_forms_type_edit($form, &$form_state, $pdf_form_type = NULL) {
     module_load_include('inc', 'pdf_forms', 'includes/pdf_forms.pdftk');
     if ($fields = pdf_forms_fields($file)) {
 			// Options for textfield type
-			$typeoptions = array('Text' => 'Text', 'Arithmetic' => 'Arithmetic');
+			$type_options = array('Text' => 'Text', 'Arithmetic' => 'Arithmetic');
 
 			// Options for reformating
 			$format_options = array('Raw','English Notation');
@@ -198,7 +198,7 @@ function pdf_forms_type_edit($form, &$form_state, $pdf_form_type = NULL) {
 				$finfo = unserialize($field['fieldinfo']);
 
         $id = str_replace(' ', '^', $field['name']);
-				//$id = $field['name'];
+
         $id = trim($id);
 
         $field_name = array(
@@ -208,23 +208,20 @@ function pdf_forms_type_edit($form, &$form_state, $pdf_form_type = NULL) {
         );
 				// Detect field type
 				$ftype = isset($field_map_data[$id]) ? $field_map_data[$id]['type'] : $field['type'];
-				$fformat = isset($field_map_data[$id]) ? $field_map_data[$id]['format'] : $field['format'];
 
-				if(in_array($ftype, $typeoptions)){
+				if(in_array($ftype, $type_options)){
 					$field_type = array(
 						'#id' => 'fields-table-' . $id . '-type',
 						'#type' => 'select',
-						'#options' => $typeoptions,
+						'#options' => $type_options,
 						'#default_value' => $ftype,
 						'#required' => TRUE,
-						//'#attributes' => array('readonly' => 'readonly'),
 					);
 
 					$field_format = array(
 					  '#id' => 'fields-table-' . $id . '-format',
 					  '#type' => 'select',
 					  '#options' => $format_options,
-					  '#default_value' => $format_options[0],
 					  '#required' => TRUE,
 					);
 				}
@@ -437,6 +434,7 @@ function pdf_forms_type_edit_submit($form, &$form_state) {
 			'value' => $field['value'],
 			'suffix' => $field['suffix'],
 			'type' => $field['type'],
+		  'format' => $field['format'],
 			'weight' => (int)$field['fieldweight'],
 			'pdf_page' => $field['pagenum'],
 			'fieldinfo' => $field['fieldinfo'],
