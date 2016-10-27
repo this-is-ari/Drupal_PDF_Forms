@@ -144,6 +144,7 @@ function pdf_forms_type_edit($form, &$form_state, $pdf_form_type = NULL) {
 			$type_options = array('Text' => 'Text', 'Arithmetic' => 'Arithmetic');
 
 			// Options for reformating
+			//@TODO - Format options should only be available for field type "text"
 			$format_options = array('Raw' => 'Raw','English Notation' => 'English Notation');
 
       $form['fields']['table'] = array(

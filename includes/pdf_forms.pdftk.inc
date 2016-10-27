@@ -339,6 +339,6 @@ function pdf_forms_pdftk_get_field_map($entity, $token_objects) {
 
     $map[$field_map->machine_name] = $field_map->prefix . $field_map->value . $field_map->suffix;
   }
-
+dpm($map);
   return $map;
 }
