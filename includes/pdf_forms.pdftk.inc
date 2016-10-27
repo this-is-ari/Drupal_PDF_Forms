@@ -59,7 +59,7 @@ function pdf_forms_fields($file = NULL) {
       'FieldFlags' => 'flags',
       'FieldJustification' => 'justification',
       'FieldStateOption' => 'fieldinfo',
-			'FieldNameAlt' => 'FieldNameAlt', 
+			'FieldNameAlt' => 'FieldNameAlt',
     );
     $fieldsdata = array();
     $index = -1;
@@ -84,7 +84,7 @@ function pdf_forms_fields($file = NULL) {
     foreach ($fieldsdata as $findex => $field) {
 			$fields[$findex]['fieldinfo'] = array();
       if ($field['FieldType'][0] == "Button" && ($field['FieldFlags'][0] == "49152" || $field['FieldFlags'][0] == "49154")) {
-        $field['FieldType'][0] = "Radio";			
+        $field['FieldType'][0] = "Radio";
       }
 			// Check if required field
 			if($field['FieldFlags'][0] == "49154" || $field['FieldFlags'][0] == "2" || $field['FieldFlags'][0] == "3"){
@@ -93,25 +93,25 @@ function pdf_forms_fields($file = NULL) {
 			// Check if readonly field
 			if($field['FieldFlags'][0] == "1" || $field['FieldFlags'][0] == "3"){
 				$fields[$findex]['fieldinfo']['readonly'] = TRUE;
-			}			
-			
+			}
+
 			if(isset($field['FieldStateOption'])){
 				$fields[$findex]['fieldinfo']['options'] = $field['FieldStateOption'];
 				// Delete "Off" value from options if required field
 				if((($key = array_search("Off", $fields[$findex]['fieldinfo']['options'])) !== false) && isset($fields[$findex]['fieldinfo']['required'])) {
 					unset($fields[$findex]['fieldinfo']['options'][$key]);
-				}						
+				}
 				unset($field['FieldStateOption']);
 			}
 			if(isset($field['FieldNameAlt'])){
 				$fields[$findex]['fieldinfo']['tooltip'] = $field['FieldNameAlt'][0];
 				unset($field['FieldNameAlt']);
-			}			
+			}
 			else{
 				$fields[$findex]['fieldinfo']['tooltip'] = '';
 			}
       foreach ($field as $ftype => $fvalue) {
-        $fvalue = $fvalue[0];        
+        $fvalue = $fvalue[0];
         $fields[$findex][$field_map[$ftype]] = $fvalue;
       }
 			$fields[$findex]['fieldinfo'] = serialize($fields[$findex]['fieldinfo']);
@@ -156,7 +156,7 @@ function pdf_forms_pdftk_prepare_datatypes($bundle, $values) {
 			// Find option not equal to Off
 			foreach($map[$name]['fieldinfo']['options'] as $option){
 				if($option != "Off"){
-					break; 
+					break;
 				}
 			}
       $values[$name] = $option;
@@ -207,7 +207,7 @@ function pdf_forms_pdftk_create_completed_form($entity, $data_entities = NULL, $
 
 		$filename_raw = db_query('SELECT filename FROM {pdf_forms_type} WHERE bundle = :bundle', array(':bundle' => $entity->bundle))->fetchField();
 		$filename = token_replace($filename_raw, $token_objects);
-		
+
 		$file_schema = file_default_scheme();
 		$destination =  "{$file_schema}://{$filename}";
 
@@ -215,7 +215,7 @@ function pdf_forms_pdftk_create_completed_form($entity, $data_entities = NULL, $
 
 		// Store data to a file.
 		$xfdffile = file_save_data($XFDF, "{$destination}.pdf.xfdf", FILE_EXISTS_REPLACE);
-		
+
 		file_usage_add($xfdffile, 'pdf_forms', $entity->bundle, $entity->submission_id);
 
 		$pdftk = variable_get('pdf_forms_pdftk_path', 'pdftk');
@@ -230,10 +230,10 @@ function pdf_forms_pdftk_create_completed_form($entity, $data_entities = NULL, $
 		ob_start();
 		passthru($command);
 		$response = ob_get_clean();
-		
+
 		$file = file_save_data($response, "{$destination}.pdf", FILE_EXISTS_RENAME);
 		file_usage_add($file, 'pdf_forms', $entity->bundle, $entity->submission_id);
-		$file->pdfdata=$map; 
+		$file->pdfdata=$map;
 		module_invoke_all('pdf_forms_generate', $file);
 	}
 	else{
@@ -313,35 +313,24 @@ function pdf_forms_pdftk_get_field_map($entity, $token_objects) {
 
     // For some reason token_replace doesn't like being passed an array of entities (doing so results in it ignoring relation tokens)
     // So instead we iterate through each entity type, running token_replace for each entity seperatly.
-      
+
 		if (!empty($field_map->prefix)) {
 			$field_map->prefix = token_replace($field_map->prefix, $token_objects);
 		}
 		if (!empty($field_map->value)) {
 			$field_map->value = token_replace($field_map->value, $token_objects);
 
-			if($field_map->type == "Addition"){
-				$values = explode("+",$field_map->value);
-				$sum = 0.0;
-				foreach ($values as $value) {
-					$value = preg_replace("/([^0-9\\.])/i", "", $value);
-					if ($value != 0) {
-						$sum+= $value;
-					}
-				}					
-				$field_map->value = $sum;
-			}
 			if($field_map->type == "Arithmetic"){
 				//dvm("math");
 				$m = new ctools_math_expr;
 				$field_map->value = $m->evaluate($field_map->value);
 				//dvm($field_map->value);
-			}			
+			}
 		}
 		if (!empty($field_map->suffix)) {
 			$field_map->suffix = token_replace($field_map->suffix, $token_objects);
 		}
-    
+
 
     $map[$field_map->machine_name] = $field_map->prefix . $field_map->value . $field_map->suffix;
   }
