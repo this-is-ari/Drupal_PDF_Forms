@@ -90,11 +90,16 @@ function pdf_forms_fields($file = NULL) {
 			if($field['FieldFlags'][0] == "49154" || $field['FieldFlags'][0] == "2" || $field['FieldFlags'][0] == "3"){
 				$fields[$findex]['fieldinfo']['required'] = TRUE;
 			}
+			else{
+				$fields[$findex]['fieldinfo']['required'] = 0;
+			}
 			// Check if readonly field
 			if($field['FieldFlags'][0] == "1" || $field['FieldFlags'][0] == "3"){
 				$fields[$findex]['fieldinfo']['readonly'] = TRUE;
 			}			
-			
+			else{
+				$fields[$findex]['fieldinfo']['readonly'] = 0;
+			}			
 			if(isset($field['FieldStateOption'])){
 				$fields[$findex]['fieldinfo']['options'] = $field['FieldStateOption'];
 				// Delete "Off" value from options if required field

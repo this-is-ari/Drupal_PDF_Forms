@@ -151,7 +151,7 @@ function pdf_forms_type_edit($form, &$form_state, $pdf_form_type = NULL) {
         ),*/
         '#header' => array(
           array('data' => t('Field Name')),
-					array('data' => t('Field Type')),
+					array('data' => t('Field Settings')),
 					array('data' => t('Field Prefix')),
 					array('data' => t('Field Value')),
 					array('data' => t('Field Suffix')),
@@ -183,6 +183,8 @@ function pdf_forms_type_edit($form, &$form_state, $pdf_form_type = NULL) {
 						'weight' => $row->weight,
 						'pagenum' => $row->pdf_page,
 						'description' => isset($row->fieldinfo['tooltip']) ? $row->fieldinfo['tooltip'] : '',
+						'readonly' => isset($row->fieldinfo['readonly']) ? $row->fieldinfo['readonly'] : 0,
+						'required' => isset($row->fieldinfo['required']) ? $row->fieldinfo['required'] : 0,
           );
         }
       }
@@ -203,6 +205,30 @@ function pdf_forms_type_edit($form, &$form_state, $pdf_form_type = NULL) {
           '#type' => 'markup',
           '#markup' => $field['name'],
         );
+				
+				if(isset($field_map_data[$id])){
+					$required_val = isset($field_map_data[$id]['required']) ? $field_map_data[$id]['required'] : $finfo['required'];
+					$readonly_val = isset($field_map_data[$id]['readonly']) ? $field_map_data[$id]['readonly'] : $finfo['readonly'];
+				}
+				else{
+					$required_val = $finfo['required'];
+					$readonly_val = $finfo['readonly'];
+				}				
+				$field_required = array(
+					'#id' => 'fields-table-' . $id . '-required',
+					'#type' => 'checkbox',
+					'#default_value' => $required_val,
+					'#value' => $required_val,
+					'#title' => t('Required'),
+				);
+				
+				$field_readonly = array(
+					'#id' => 'fields-table-' . $id . '-readonly',
+					'#type' => 'checkbox',
+					'#default_value' => $readonly_val,
+					'#value' => $readonly_val,
+					'#title' => t('Read only'),
+				);				
 				// Detect field type
 				$ftype = isset($field_map_data[$id]) ? $field_map_data[$id]['type'] : $field['type'];
 				if(in_array($ftype, $typeoptions)){
@@ -224,6 +250,8 @@ function pdf_forms_type_edit($form, &$form_state, $pdf_form_type = NULL) {
 						'#attributes' => array('readonly' => 'readonly'),
 					);
 				}
+				$field_settings = array('required' => $field_required, 'readonly' => $field_readonly, 'type' => $field_type);
+				
         $prefix = array(
           '#id' => 'fields-table-' . $id . '-prefix',
           '#type' => 'textarea',
@@ -282,8 +310,9 @@ function pdf_forms_type_edit($form, &$form_state, $pdf_form_type = NULL) {
 
         $form['fields']['table'][$id] = array(
           'name' => &$field_name,
-          'type' => &$field_type,
-          'prefix' => &$prefix,
+          //'type' => &$field_type,
+					'field_settings' => &$field_settings,
+					'prefix' => &$prefix,
           'value' => &$value,
           'suffix' => &$suffix,
 					'fielddesc' => &$fielddesc,
@@ -295,7 +324,8 @@ function pdf_forms_type_edit($form, &$form_state, $pdf_form_type = NULL) {
 
         $form['fields']['table']['#rows'][$id] = array(
           'name' => &$field_name,
-          'type' => &$field_type,
+          //'type' => &$field_type,
+					'field_settings' => &$field_settings,
           'prefix' => &$prefix,
           'value' => &$value,
           'suffix' => &$suffix,
@@ -307,6 +337,7 @@ function pdf_forms_type_edit($form, &$form_state, $pdf_form_type = NULL) {
 		
         unset($field_name);
         unset($field_type);
+				unset($field_settings);
         unset($prefix);
         unset($value);
         unset($suffix);
@@ -316,6 +347,7 @@ function pdf_forms_type_edit($form, &$form_state, $pdf_form_type = NULL) {
         unset($machine_name);
         unset($fieldinfo);
       }
+			
       $token_types = array('pdf_form');
       $form['fields']['token_tree'] = array(
         '#theme' => 'token_tree',
@@ -349,6 +381,7 @@ function pdf_forms_type_edit($form, &$form_state, $pdf_form_type = NULL) {
 function pdf_forms_type_edit_submit($form, &$form_state) {
 
   $values = $form_state['values'];
+	
   $pdf_form_type = $values['pdf_form_type'];
 
   $new_bundle = FALSE;
@@ -397,10 +430,14 @@ function pdf_forms_type_edit_submit($form, &$form_state) {
 	else{
 		$fields = $form_state['input']['fields']['table'];
 	}
+	
 
 	foreach ($fields as $machine_name => $field) {
+	
 		$field['fieldinfo'] = unserialize($field['fieldinfo']);
 		$field['fieldinfo']['tooltip'] = $field['fielddesc'];
+		$field['fieldinfo']['readonly'] = !empty($field['field_settings']['readonly']) ? $field['field_settings']['readonly'] : 0;
+		$field['fieldinfo']['required'] = !empty($field['field_settings']['required']) ? $field['field_settings']['required'] : 0;
 		$field['fieldinfo'] = serialize($field['fieldinfo']);
 		$data = array(
 			'bundle' => $pdf_form_type->bundle,
@@ -409,7 +446,7 @@ function pdf_forms_type_edit_submit($form, &$form_state) {
 			'prefix' => $field['prefix'],
 			'value' => $field['value'],
 			'suffix' => $field['suffix'],
-			'type' => $field['type'],
+			'type' => $field['field_settings']['type'],
 			'weight' => (int)$field['fieldweight'],
 			'pdf_page' => $field['pagenum'],
 			'fieldinfo' => $field['fieldinfo'],
@@ -561,11 +598,11 @@ function pdf_forms_edit($form, &$form_state, $bundle = NULL) {
 					$formfield['#default_value'] = $field[$fname]['value'];
 				}
 				// Check required field
-				if(isset($field[$fname]['info']['required'])){
+				if(!empty($field[$fname]['info']['required'])){
 					$formfield['#required'] = TRUE;				
 				}
 				// Check readonly field
-				if(isset($field[$fname]['info']['readonly'])){
+				if(!empty($field[$fname]['info']['readonly'])){
 					$formfield['#disabled'] = $field[$fname]['info']['readonly'];
 					$formfield['#type'] = "hidden";
 					$hiddenfield = TRUE;
@@ -634,13 +671,13 @@ function pdf_forms_edit_submit($form, &$form_state) {
 function pdf_forms_submission_revisions($submission_id, $type = 'pdf_form'){
 	$info = entity_get_info($type);
 	$submission = pdf_forms_load($submission_id);
-	dpm($submission);
+	
   $revisions = db_select($info['revision table'], 'r')
     ->fields('r', array('vid', 'uid', 'changed'))
     ->condition($info['entity keys']['id'], $submission->submission_id)
     ->execute()
     ->fetchAllAssoc($info['entity keys']['revision']);
-	dpm($revisions);	
+	
 	$header = array(
 		t('Changed'),
 		t('User'),
