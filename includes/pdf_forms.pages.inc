@@ -289,9 +289,7 @@ function pdf_forms_type_submission_edit_submit($form, &$form_state) {
 
     $values = serialize($form_state['values']);
     $submission->pdfdata = $values;
-    $data = pdf_forms_pdftk_prepare_datatypes($submission->bundle, $form_state['values']);
-
-    $file = pdf_forms_pdftk_generate_completed_form($submission, $data);
+    $file = pdf_forms_pdftk_create_completed_form($submission, $data);
     $submission->fid = $file->fid;
 		$submission->is_new_revision = TRUE;
     pdf_forms_save($submission);

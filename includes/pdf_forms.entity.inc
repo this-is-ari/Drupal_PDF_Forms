@@ -152,8 +152,7 @@ function pdf_forms_type_edit($form, &$form_state, $pdf_form_type = NULL) {
         '#theme' => 'pdf_forms_mapping_table',
         '#header' => array(
           array('data' => t('Name')),
-					array('data' => t('Type')),
-          array('data' => t('Format')),
+          array('data' => t('Settings')),
 					array('data' => t('Prefix')),
 					array('data' => t('Value')),
 					array('data' => t('Suffix')),
@@ -180,7 +179,7 @@ function pdf_forms_type_edit($form, &$form_state, $pdf_form_type = NULL) {
           $field_map_data[$row->machine_name] = array(
 						'type' => $row->type,
             'format' => $row->format,
-            'signers' => $row->signers,
+            'format' => $row->format,
             'prefix' => $row->prefix,
             'suffix' => $row->suffix,
             'value' => $row->value,
@@ -272,7 +271,7 @@ function pdf_forms_type_edit($form, &$form_state, $pdf_form_type = NULL) {
 					);
 				}
 
-				$field_settings = array('required' => $field_required, 'readonly' => $field_readonly, 'type' => $field_type);
+				$field_settings = array('required' => $field_required, 'readonly' => $field_readonly, 'type' => $field_type, 'format' => $field_format);
 				
         $prefix = array(
           '#id' => 'fields-table-' . $id . '-prefix',
@@ -332,10 +331,8 @@ function pdf_forms_type_edit($form, &$form_state, $pdf_form_type = NULL) {
 
         $form['fields']['table'][$id] = array(
           'name' => &$field_name,
-          'type' => &$field_type,
-          'format' => &$field_format,
+          'field_settings' => &$field_settings,
           'prefix' => &$prefix,
-					'field_settings' => &$field_settings,
           'value' => &$value,
           'suffix' => &$suffix,
 					'fielddesc' => &$fielddesc,
@@ -347,8 +344,6 @@ function pdf_forms_type_edit($form, &$form_state, $pdf_form_type = NULL) {
 
         $form['fields']['table']['#rows'][$id] = array(
           'name' => &$field_name,
-          'type' => &$field_type,
-          'format' => &$field_format,
 					'field_settings' => &$field_settings,
           'prefix' => &$prefix,
           'value' => &$value,
@@ -473,7 +468,7 @@ function pdf_forms_type_edit_submit($form, &$form_state) {
 			'prefix' => $field['prefix'],
 			'value' => $field['value'],
 			'suffix' => $field['suffix'],
-		  'format' => $field['format'],
+		  'format' => $field['field_settings']['format'],
 			'type' => $field['field_settings']['type'],
 			'weight' => (int)$field['fieldweight'],
 			'pdf_page' => $field['pagenum'],
@@ -682,8 +677,7 @@ function pdf_forms_edit_submit($form, &$form_state) {
   $submission = entity_get_controller('pdf_form')->create(array('bundle'=>$form_state['bundle']));
   global $user;
   $submission->uid = $user->uid;
-  $data = pdf_forms_pdftk_prepare_datatypes($submission->bundle, $form_state['values']);
-  $file = pdf_forms_pdftk_generate_completed_form($submission, $data);
+  $file = pdf_forms_pdftk_create_completed_form($submission, $form_state['values']);
   $values = serialize($form_state['values']);
   $submission->pdfdata = $values;
   $submission->fid = $file->fid;
