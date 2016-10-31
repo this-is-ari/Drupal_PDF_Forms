@@ -161,18 +161,22 @@ function pdf_forms_pdftk_process_fields($field_mappings, $token_objects = array(
 
     //Process field types
     switch ($field_map['type']) {
+
       case "Arithmetic":
         $m = new ctools_math_expr;
         $m->suppress_errors = TRUE;
         $values[$field_map['machine_name']] = $m->evaluate($values[$field_map['machine_name']]);
         break;
+
       case "Button":
-        if (isset($values[$field_map['machine_name']]))
+       if (!empty($values[$field_map['machine_name']])) {
+         $values[$field_map['machine_name']] = $field_map['fieldinfo']['options'][$values[$field_map['machine_name']]];
+          /*
           // Find option not equal to Off
           foreach($field_map['fieldinfo']['options'] as $option) {
             if($option != "Off"){
               break;
-            }
+            }*/
           }
         break;
     }
