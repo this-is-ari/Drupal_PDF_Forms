@@ -96,10 +96,10 @@ function pdf_forms_fields($file = NULL) {
 			// Check if readonly field
 			if($field['FieldFlags'][0] == "1" || $field['FieldFlags'][0] == "3"){
 				$fields[$findex]['fieldinfo']['readonly'] = TRUE;
-			}			
+			}
 			else{
 				$fields[$findex]['fieldinfo']['readonly'] = 0;
-			}			
+			}
 
 			if(isset($field['FieldStateOption'])){
 				$fields[$findex]['fieldinfo']['options'] = $field['FieldStateOption'];
@@ -135,7 +135,7 @@ function pdf_forms_fields($file = NULL) {
  * Returns the field mapping for an entity bundle.
  */
 function pdf_forms_pdftk_get_field_map($entity) {
-  $field_mappings = db_query('SELECT * FROM {pdf_forms_field_mapping} WHERE bundle = :bundle', array(':bundle' => $entity->bundle))->fetchAll(PDO::FETCH_ASSOC); 
+  $field_mappings = db_query('SELECT * FROM {pdf_forms_field_mapping} WHERE bundle = :bundle', array(':bundle' => $entity->bundle))->fetchAll(PDO::FETCH_ASSOC);
   return ($field_mappings);
 }
 
@@ -144,7 +144,7 @@ function pdf_forms_pdftk_get_field_map($entity) {
  * @param $field_mappings - array of the field mappings
  * @param $token_objects - objects which are used with token_replace
  * @param $values - any submitted form values
- * @return an Array of values to insert into the form 
+ * @return an Array of values to insert into the form
  */
 function pdf_forms_pdftk_process_fields($field_mappings, $token_objects = array(), $values = array()) {
 
@@ -183,7 +183,7 @@ function pdf_forms_pdftk_process_fields($field_mappings, $token_objects = array(
     //Process field formatting
     switch ($field_map['format']) {
       case "English Notation":
-        $values[$field_map['machine_name']] = filter_var($values[$field_map['machine_name']],FILTER_SANITIZE_NUMBER_FLOAT);
+        $values[$field_map['machine_name']] = floatval(filter_var($values[$field_map['machine_name']],FILTER_SANITIZE_NUMBER_FLOAT));
         setlocale(LC_MONETARY, 'en_US');
         $values[$field_map['machine_name']] = money_format('%!i', $values[$field_map['machine_name']]);
         break;

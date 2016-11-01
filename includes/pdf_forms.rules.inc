@@ -192,18 +192,23 @@ function pdf_forms_rules_action_save_submission($bundle, $token_objects) {
   global $user;
   $entity->uid = $user->uid;
   //Save the blank submission so we have a valid submission ID before generating the file
-  pdf_forms_save($entity); 
+  pdf_forms_save($entity);
   module_load_include('inc', 'pdf_forms', 'includes/pdf_forms.pdftk');
 
-  //Rules returns the list of entities using EntityDrupalWrapper, we just need the solid entity objects for our function
   $entities = array();
-  foreach ($token_objects as $token) {
-    $category = $token->type().'-'.$token->getBundle;
-    $entities[$category] = entity_load_single($token->type(), $token->getIdentifier());
+  //Rules returns the list of entities using EntityDrupalWrapper, we convert them to traditional entity objects
+  foreach ($token_objects as $token_entity) {
+    //Uncomment this line will result in tokens being presented as [entity_type-bundle]
+    //$entity_category = $token_entity->type().'-'.$token_entity->getBundle();
+    $entity_category = $token_entity->type();
+    $entity_array = entity_load($token_entity->type(), array($token_entity->getIdentifier()));
+    foreach ($entity_array as $id => $object) {
+      $entities[$entity_category] = $object;
+    }
   }
-  
+
   $file = pdf_forms_pdftk_create_completed_form($entity, NULL, $entities, $template = FALSE);
-  
+
   $entity->fid = $file->fid;
   $entity->pdfdata = serialize($file->pdfdata);
   pdf_forms_save($entity);
