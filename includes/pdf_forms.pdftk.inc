@@ -208,7 +208,7 @@ function pdf_forms_pdftk_process_fields($field_mappings, $token_objects = array(
  */
 function pdf_forms_pdftk_create_completed_form($entity, $values = array(), $token_objects = array(), $template = FALSE) {
 
-  $save_path = variable_get('pdf_forms_submission_path', 'public://');
+  $save_path = variable_get('pdf_forms_submissions_path', 'public://');
   // Load up the template.
   if (!$template) {
     $template_fid = db_query('SELECT fid FROM {pdf_forms_type} WHERE bundle = :bundle', array(':bundle' => $entity->bundle))->fetchField();
@@ -233,11 +233,10 @@ function pdf_forms_pdftk_create_completed_form($entity, $values = array(), $toke
 
 		$filename_raw = db_query('SELECT filename FROM {pdf_forms_type} WHERE bundle = :bundle', array(':bundle' => $entity->bundle))->fetchField();
 		$filename = token_replace($filename_raw, $token_objects);
+    //Sanitize Filename
+    $filename = preg_replace(array('/\s/', '/\.[\.]+/', '/[^\w_\.\-]/'), array('_', '.', ''), $filename);
 
-    $save_path = variable_get('pdf_forms_submission_path', 'public://');
-
-		$destination =  "{$save_path}{$filename}";
-drupal_set_message($destination);
+		$destination =  "{$save_path}/{$filename}";
 		$XFDF = pdf_forms_generate_xfdf("{$filename}.pdf.xfdf", $map, 'UTF-8');
 
 		// Store data to a file.

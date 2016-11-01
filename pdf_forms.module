@@ -469,5 +469,18 @@ function pdf_forms_preprocess_menu_local_task(&$variables) {
     }
 }
 
+/**
+ * Add new format field to PDF mapping table
+ */
+function pdf_update_7100() {
+  $spec = array(
+    'type' => 'varchar',
+    'description' => "PDF Field Mapping Format",
+    'length' => 20,
+    'not null' => FALSE,
+  ); 
+  db_add_field( 'pdf_forms_field_mapping', 'format', $spec);
+}
+
 include_once drupal_get_path('module', 'pdf_forms') . '/includes/pdf_forms.rules.inc';
 include_once drupal_get_path('module', 'pdf_forms') . '/includes/pdf_forms.entity.inc';

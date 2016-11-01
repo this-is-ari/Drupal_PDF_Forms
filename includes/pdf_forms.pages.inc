@@ -16,18 +16,18 @@ function pdf_forms_admin_settings($form, &$form_state) {
     '#default_value' => variable_get('pdf_forms_pdftk_path', 'pdftk'),
   );
 
-  $form['pdf_forms_template_path'] = array(
+  $form['pdf_forms_templates_path'] = array(
     '#type' => 'textfield',
     '#title' => t('PDF Template Path'),
     '#description' => t('Enter the path to store the PDF Form Templates.'),
-    '#default_value' => variable_get('pdf_forms_template_path', 'public://pdf_form_templates'),
+    '#default_value' => variable_get('pdf_forms_templates_path', 'public://pdf_form_templates'),
   );
 
     $form['pdf_forms_submissions_path'] = array(
     '#type' => 'textfield',
     '#title' => t('PDF Submission Path'),
     '#description' => t('Enter the path to store the PDF Form Submissions.'),
-    '#default_value' => variable_get('pdf_forms_submission_path', 'public://pdf_form_submissions'),
+    '#default_value' => variable_get('pdf_forms_submissions_path', 'public://pdf_form_submissions'),
   );
 
   $form['submit'] = array(
@@ -49,13 +49,13 @@ function pdf_forms_admin_settings_validate($form, &$form_state) {
     form_set_error('pdf_forms_pdftk_path', t('Invalid path for PDFTK executable, or invalid permissions.'));
   }
 
-  if (!file_prepare_directory($form_state['values']['pdf_forms_template_path'], FILE_CREATE_DIRECTORY)) {
-    form_set_error('pdf_forms_template_path', t('Could not create directory for saving PDF Form Templates.'));
+  if (!file_prepare_directory($form_state['values']['pdf_forms_templates_path'], FILE_CREATE_DIRECTORY)) {
+    form_set_error('pdf_forms_templates_path', t('Could not create directory for saving PDF Form Templates.'));
   }
 
 
-  if (!file_prepare_directory($form_state['values']['pdf_forms_submission_path'], FILE_CREATE_DIRECTORY)) {
-    form_set_error('pdf_forms_submission_path', t('Could not create directory for saving PDF Form Submissions.'));
+  if (!file_prepare_directory($form_state['values']['pdf_forms_submissions_path'], FILE_CREATE_DIRECTORY)) {
+    form_set_error('pdf_forms_submissions_path', t('Could not create directory for saving PDF Form Submissions.'));
   }
 
 }
@@ -65,10 +65,10 @@ function pdf_forms_admin_settings_validate($form, &$form_state) {
  */
 function pdf_forms_admin_settings_submit($form, &$form_state) {
   variable_set('pdf_forms_pdftk_path', $form_state['values']['pdf_forms_pdftk_path']);
-  file_prepare_directory($form_state['values']['pdf_forms_template_path']);
-  variable_set('pdf_forms_template_path', $form_state['values']['pdf_forms_template_path']);
+  file_prepare_directory($form_state['values']['pdf_forms_templates_path']);
+  variable_set('pdf_forms_templates_path', $form_state['values']['pdf_forms_templates_path']);
   file_prepare_directory($form_state['values']['pdf_forms_submission_path']);
-  variable_set('pdf_forms_submission_path', $form_state['values']['pdf_forms_submission_path']);
+  variable_set('pdf_forms_submissions_path', $form_state['values']['pdf_forms_submissions_path']);
 }
 
 /**

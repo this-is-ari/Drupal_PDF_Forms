@@ -115,7 +115,7 @@ function pdf_forms_type_edit($form, &$form_state, $pdf_form_type = NULL) {
     '#title' => t('File'),
     '#description' => t('Upload the PDF form to be filled out by submissions.'),
     '#required' => TRUE,
-    '#upload_location' => variable_get('pdf_forms_template_path', 'public://pdf_form_templates'),
+    '#upload_location' => variable_get('pdf_forms_templates_path', 'public://pdf_form_templates'),
     '#field_name' => 'fid',
     '#default_value' => $pdf_form_type->fid,
   );
