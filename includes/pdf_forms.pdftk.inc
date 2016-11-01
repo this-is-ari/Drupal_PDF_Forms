@@ -156,7 +156,6 @@ function pdf_forms_pdftk_process_fields($field_mappings, $token_objects = array(
     $values[$field_map['machine_name']] = (!empty($values[$field_map['machine_name']]) ? token_replace($values[$field_map['machine_name']], $token_objects) : $values[$field_map['machine_name']]);
     $field_map['suffix'] = (!empty($field_map['suffix']) ? token_replace($field_map['suffix'], $token_objects) : "");
     $field_map['prefix'] = (!empty($field_map['prefix']) ? token_replace($field_map['prefix'], $token_objects) : "");
-
   	$field_map['fieldinfo'] = unserialize($field_map['fieldinfo']);
 
     //Process field types
@@ -214,8 +213,6 @@ function pdf_forms_pdftk_create_completed_form($entity, $values = array(), $toke
     $template_fid = db_query('SELECT fid FROM {pdf_forms_type} WHERE bundle = :bundle', array(':bundle' => $entity->bundle))->fetchField();
     $template = file_load($template_fid);
   }
-
-  $token_objects = array();
 
   $account = user_load($entity->uid);
   $token_objects['user'] = $account;
