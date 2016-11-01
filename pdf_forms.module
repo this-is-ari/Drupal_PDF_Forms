@@ -460,12 +460,26 @@ function pdf_forms_load_multiple($submission_ids = FALSE, $conditions = array(),
 * Preprocess local tasks to pass GET parameters between submission tabs
 */
 function pdf_forms_preprocess_menu_local_task(&$variables) {
-		
     $link = &$variables['element']['#link'];
     // check for $_GET['destination'] because drupal_get_destination() always contains at least the current page
-    if ($link['tab_root'] === 'pdf_form/submissions/%' && !empty($_GET['destination'])) {
-      $link['localized_options']['query'] = drupal_get_destination();
+    if (array_key_exists('tab_root', $link)) {
+      if ($link['tab_root'] === 'pdf_form/submissions/%' && !empty($_GET['destination'])) {
+        $link['localized_options']['query'] = drupal_get_destination();
+      }
     }
+}
+
+/**
+ * Add new format field to PDF mapping table
+ */
+function pdf_update_7100() {
+  $spec = array(
+    'type' => 'varchar',
+    'description' => "PDF Field Mapping Format",
+    'length' => 20,
+    'not null' => FALSE,
+  ); 
+  db_add_field( 'pdf_forms_field_mapping', 'format', $spec);
 }
 
 include_once drupal_get_path('module', 'pdf_forms') . '/includes/pdf_forms.rules.inc';

@@ -60,7 +60,7 @@ function pdf_forms_fields($file = NULL) {
       'FieldFlags' => 'flags',
       'FieldJustification' => 'justification',
       'FieldStateOption' => 'fieldinfo',
-			'FieldNameAlt' => 'FieldNameAlt', 
+			'FieldNameAlt' => 'FieldNameAlt',
     );
     $fieldsdata = array();
     $index = -1;
@@ -85,7 +85,7 @@ function pdf_forms_fields($file = NULL) {
     foreach ($fieldsdata as $findex => $field) {
 			$fields[$findex]['fieldinfo'] = array();
       if ($field['FieldType'][0] == "Button" && ($field['FieldFlags'][0] == "49152" || $field['FieldFlags'][0] == "49154")) {
-        $field['FieldType'][0] = "Radio";			
+        $field['FieldType'][0] = "Radio";
       }
 			// Check if required field
 			if($field['FieldFlags'][0] == "49154" || $field['FieldFlags'][0] == "2" || $field['FieldFlags'][0] == "3"){
@@ -97,22 +97,23 @@ function pdf_forms_fields($file = NULL) {
 			// Check if readonly field
 			if($field['FieldFlags'][0] == "1" || $field['FieldFlags'][0] == "3"){
 				$fields[$findex]['fieldinfo']['readonly'] = TRUE;
-			}			
+			}
 			else{
 				$fields[$findex]['fieldinfo']['readonly'] = 0;
-			}			
+			}
+
 			if(isset($field['FieldStateOption'])){
 				$fields[$findex]['fieldinfo']['options'] = $field['FieldStateOption'];
 				// Delete "Off" value from options if required field
 				if((($key = array_search("Off", $fields[$findex]['fieldinfo']['options'])) !== false) && isset($fields[$findex]['fieldinfo']['required'])) {
 					unset($fields[$findex]['fieldinfo']['options'][$key]);
-				}						
+				}
 				unset($field['FieldStateOption']);
 			}
 			if(isset($field['FieldNameAlt'])){
 				$fields[$findex]['fieldinfo']['tooltip'] = $field['FieldNameAlt'][0];
 				unset($field['FieldNameAlt']);
-			}			
+			}
 			else{
 				$fields[$findex]['fieldinfo']['tooltip'] = '';
 			}
@@ -120,7 +121,7 @@ function pdf_forms_fields($file = NULL) {
 				$field['FieldValue'][] = '';
 			}
       foreach ($field as $ftype => $fvalue) {
-        $fvalue = $fvalue[0];        
+        $fvalue = $fvalue[0];
         $fields[$findex][$field_map[$ftype]] = $fvalue;
       }
 			$fields[$findex]['fieldinfo'] = serialize($fields[$findex]['fieldinfo']);
@@ -133,43 +134,67 @@ function pdf_forms_fields($file = NULL) {
   return $fields;
 }
 
+
 /**
- * Generate data from data entity for submission.
+ * Returns the field mapping for an entity bundle.
  */
-function pdf_forms_pdftk_prepare_submission_data($entity, $data_entities = NULL) {
-  // Load up any entities that are being passed.
-  if (!is_null($data_entities)) {
-    foreach ($data_entities as $data_entity) {
-      $token_objects[$data_entity->type()] = $data_entity->value();
-    }
-  }
-
-  // Load up the field map data.
-  $map = array();
-  $map = pdf_forms_pdftk_get_field_map($entity, $token_objects);
-
-  return $map;
+function pdf_forms_pdftk_get_field_map($entity) {
+  $field_mappings = db_query('SELECT * FROM {pdf_forms_field_mapping} WHERE bundle = :bundle', array(':bundle' => $entity->bundle))->fetchAll(PDO::FETCH_ASSOC);
+  return ($field_mappings);
 }
 
 /**
- * Prepare data arrray for PDF population.
+ * Prepare data array for PDF population.
+ * @param $field_mappings - array of the field mappings
+ * @param $token_objects - objects which are used with token_replace
+ * @param $values - any submitted form values
+ * @return an Array of values to insert into the form
  */
-function pdf_forms_pdftk_prepare_datatypes($bundle, $values) {
-  $results = db_query('SELECT machine_name, type, fieldinfo FROM {pdf_forms_field_mapping} WHERE bundle = :bundle', array(':bundle' => $bundle));
-  foreach ($results as $field_map) {
-    $map[$field_map->machine_name]['type'] = $field_map->type;
-		$map[$field_map->machine_name]['fieldinfo'] = unserialize($field_map->fieldinfo);
-  }
-  foreach ($values as $name => $value) {
-    if ($map[$name]['type'] == "Button" && ($value)) {
-			// Find option not equal to Off
-			foreach($map[$name]['fieldinfo']['options'] as $option){
-				if($option != "Off"){
-					break; 
-				}
-			}
-      $values[$name] = $option;
+function pdf_forms_pdftk_process_fields($field_mappings, $token_objects = array(), $values = array()) {
+
+  foreach ($field_mappings as $field_map) {
+    // If form value is provided override field mappings
+    $values[$field_map['machine_name']] = (!empty($values[$field_map['machine_name']]) ? $values[$field_map['machine_name']] : $field_map['value']);
+
+    //Replace Tokens
+    $values[$field_map['machine_name']] = (!empty($values[$field_map['machine_name']]) ? token_replace($values[$field_map['machine_name']], $token_objects) : $values[$field_map['machine_name']]);
+    $field_map['suffix'] = (!empty($field_map['suffix']) ? token_replace($field_map['suffix'], $token_objects) : "");
+    $field_map['prefix'] = (!empty($field_map['prefix']) ? token_replace($field_map['prefix'], $token_objects) : "");
+  	$field_map['fieldinfo'] = unserialize($field_map['fieldinfo']);
+
+    //Process field types
+    switch ($field_map['type']) {
+
+      case "Arithmetic":
+        $m = new ctools_math_expr;
+        $m->suppress_errors = TRUE;
+        $values[$field_map['machine_name']] = $m->evaluate($values[$field_map['machine_name']]);
+        break;
+
+      case "Button":
+       if (!empty($values[$field_map['machine_name']])) {
+         $values[$field_map['machine_name']] = $field_map['fieldinfo']['options'][$values[$field_map['machine_name']]];
+          /*
+          // Find option not equal to Off
+          foreach($field_map['fieldinfo']['options'] as $option) {
+            if($option != "Off"){
+              break;
+            }*/
+          }
+        break;
     }
+
+    //Process field formatting
+    switch ($field_map['format']) {
+      case "English Notation":
+        $values[$field_map['machine_name']] = floatval(filter_var($values[$field_map['machine_name']],FILTER_SANITIZE_NUMBER_FLOAT));
+        setlocale(LC_MONETARY, 'en_US');
+        $values[$field_map['machine_name']] = money_format('%!i', $values[$field_map['machine_name']]);
+        break;
+    }
+
+    //Attach the prefix and suffix
+    $values[$field_map['machine_name']] = $field_map['prefix'] . $values[$field_map['machine_name']] . $field_map['suffix'];
   }
 
   return $values;
@@ -180,51 +205,44 @@ function pdf_forms_pdftk_prepare_datatypes($bundle, $values) {
  *
  * @param $entity - This is the pdf_form entity.
  * @param $token_objects - This is a list of entities we would like to use Token values from
- *
+ * @param $values - if we have values already from a form submission
+ * @param $template - are we specifing the PDF file to use?
  * @return the File object.
  */
-function pdf_forms_pdftk_create_completed_form($entity, $data_entities = NULL, $template = FALSE) {
+function pdf_forms_pdftk_create_completed_form($entity, $values = array(), $token_objects = array(), $template = FALSE) {
 
-  $save_path = variable_get('pdf_form_save_path', 'public://');
+  $save_path = variable_get('pdf_forms_submissions_path', 'public://');
   // Load up the template.
   if (!$template) {
     $template_fid = db_query('SELECT fid FROM {pdf_forms_type} WHERE bundle = :bundle', array(':bundle' => $entity->bundle))->fetchField();
     $template = file_load($template_fid);
   }
 
-  $token_objects = array();
-
   $account = user_load($entity->uid);
   $token_objects['user'] = $account;
   $token_objects['pdf_form'] = $entity;
 
-  // Load up any entities that are being passed.
-  if (!is_null($data_entities)) {
-    foreach ($data_entities as $data_entity) {
-      $token_objects[$data_entity->type()] = $data_entity->value();
-    }
-  }
-
   // Load up the field map data.
   $map = array();
-  $map = pdf_forms_pdftk_get_field_map($entity, $token_objects);
+  $map = pdf_forms_pdftk_get_field_map($entity);
+
 	if(count($map)){
-		$map = pdf_forms_pdftk_prepare_datatypes($entity->bundle, $map);
+		$map = pdf_forms_pdftk_process_fields($map, $token_objects, $values);
 
 		// Create the xfdf
 		module_load_include('inc', 'pdf_forms', 'includes/pdf_forms.xfdf');
 
 		$filename_raw = db_query('SELECT filename FROM {pdf_forms_type} WHERE bundle = :bundle', array(':bundle' => $entity->bundle))->fetchField();
 		$filename = token_replace($filename_raw, $token_objects);
-		
-		$file_schema = file_default_scheme();
-		$destination =  "{$file_schema}://{$filename}";
+    //Sanitize Filename
+    $filename = preg_replace(array('/\s/', '/\.[\.]+/', '/[^\w_\.\-]/'), array('_', '.', ''), $filename);
 
+		$destination =  "{$save_path}/{$filename}";
 		$XFDF = pdf_forms_generate_xfdf("{$filename}.pdf.xfdf", $map, 'UTF-8');
 
 		// Store data to a file.
 		$xfdffile = file_save_data($XFDF, "{$destination}.pdf.xfdf", FILE_EXISTS_REPLACE);
-		
+
 		file_usage_add($xfdffile, 'pdf_forms', $entity->bundle, $entity->submission_id);
 
 		$pdftk = variable_get('pdf_forms_pdftk_path', 'pdftk');
@@ -236,14 +254,13 @@ function pdf_forms_pdftk_create_completed_form($entity, $data_entities = NULL, $
      			. ' fill_form '
      			. escapeshellarg(drupal_realpath($xfdffile->uri))
      			. ' output - flatten drop_xfa';
-
 		ob_start();
 		passthru($command);
 		$response = ob_get_clean();
-		
+
 		$file = file_save_data($response, "{$destination}.pdf", FILE_EXISTS_RENAME);
 		file_usage_add($file, 'pdf_forms', $entity->bundle, $entity->submission_id);
-		$file->pdfdata=$map; 
+		$file->pdfdata=$map;
 		module_invoke_all('pdf_forms_generate', $file);
 	}
 	else{
@@ -251,110 +268,4 @@ function pdf_forms_pdftk_create_completed_form($entity, $data_entities = NULL, $
 		$file->pdfdata = array();
 	}
   return $file;
-}
-
-/**
- *
- */
-function pdf_forms_pdftk_generate_completed_form($entity, $data_entities = NULL, $template = FALSE) {
-
-  $save_path = variable_get('pdf_form_save_path', 'public://');
-  // Load up the template.
-  if (!$template) {
-    $template_fid = db_query('SELECT fid FROM {pdf_forms_type} WHERE bundle = :bundle', array(':bundle' => $entity->bundle))->fetchField();
-    $template = file_load($template_fid);
-  }
-
-  $token_objects = array();
-
-  $account = user_load($entity->uid);
-  $token_objects['user'] = $account;
-  $token_objects['pdf_form'] = $entity;
-
-  // Load up the field map data.
-  $map = array();
-  $map = pdf_forms_pdftk_get_field_map($entity, $token_objects);
-
-  // Create the xfdf.
-  module_load_include('inc', 'pdf_forms', 'includes/pdf_forms.xfdf');
-
-  $filename_raw = db_query('SELECT filename FROM {pdf_forms_type} WHERE bundle = :bundle', array(':bundle' => $entity->bundle))->fetchField();
-  $filename = token_replace($filename_raw, $token_objects);
-
-  $file_schema = file_default_scheme();
-  $destination = "{$file_schema}://{$filename}";
-
-  $XFDF = pdf_forms_generate_xfdf("{$filename}.pdf.xfdf", $data_entities, 'UTF-8');
-
-  // Store data to a file.
-  $xfdffile = file_save_data($XFDF, "{$destination}.pdf.xfdf", FILE_EXISTS_REPLACE);
-
-  file_usage_add($xfdffile, 'pdf_forms', $entity->bundle, $entity->submission_id);
-
-  $pdftk = variable_get('pdf_forms_pdftk_path', 'pdftk');
-
-  // Start shell command.
-  $command = $pdftk . ' '
-    . escapeshellarg(drupal_realpath($template->uri))
-    . ' fill_form '
-    . escapeshellarg(drupal_realpath($xfdffile->uri))
-    . ' output - flatten drop_xfa';
-  ob_start();
-  passthru($command);
-  $response = ob_get_clean();
-
-  $file = file_save_data($response, "{$destination}.pdf", FILE_EXISTS_REPLACE);
-  file_usage_add($file, 'pdf_forms', $entity->bundle, $entity->submission_id);
-  $file->pdfdata = $map;
-  module_invoke_all('pdf_forms_generate', $file);
-
-  return $file;
-}
-
-/**
- * Returns the field mapping for an entity bundle.
- */
-function pdf_forms_pdftk_get_field_map($entity, $token_objects) {
-
-  $map = array();
-  $results = db_query('SELECT * FROM {pdf_forms_field_mapping} WHERE bundle = :bundle', array(':bundle' => $entity->bundle));
-
-  foreach ($results as $field_map) {
-
-    // For some reason token_replace doesn't like being passed an array of entities (doing so results in it ignoring relation tokens)
-    // So instead we iterate through each entity type, running token_replace for each entity seperatly.
-      
-		if (!empty($field_map->prefix)) {
-			$field_map->prefix = token_replace($field_map->prefix, $token_objects);
-		}
-		if (!empty($field_map->value)) {
-			$field_map->value = token_replace($field_map->value, $token_objects);
-
-			if($field_map->type == "Addition"){
-				$values = explode("+",$field_map->value);
-				$sum = 0.0;
-				foreach ($values as $value) {
-					$value = preg_replace("/([^0-9\\.])/i", "", $value);
-					if ($value != 0) {
-						$sum+= $value;
-					}
-				}					
-				$field_map->value = $sum;
-			}
-			if($field_map->type == "Arithmetic"){
-				//dvm("math");
-				$m = new ctools_math_expr;
-				$field_map->value = $m->evaluate($field_map->value);
-				//dvm($field_map->value);
-			}			
-		}
-		if (!empty($field_map->suffix)) {
-			$field_map->suffix = token_replace($field_map->suffix, $token_objects);
-		}
-    
-
-    $map[$field_map->machine_name] = $field_map->prefix . $field_map->value . $field_map->suffix;
-  }
-
-  return $map;
 }

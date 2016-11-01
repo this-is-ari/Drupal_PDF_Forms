@@ -137,7 +137,7 @@ function pdf_forms_rules_action_info() {
         'options list' => 'pdf_forms_bundle_options',
        // 'restriction' => 'input',.
       ),
-      'data_entities' => array(
+      'token_objects' => array(
         'type' => 'list<entity>',
         'label' => t('Entities'),
         'description' => t('These entities will be used to retrieve token values when populating the PDF form '),
@@ -187,18 +187,28 @@ function pdf_forms_rules_condition_info() {
 /**
  * - Generates a submission for the provided entity.
  */
-function pdf_forms_rules_action_save_submission($bundle, $data_entities) {
- // dpm($bundle);
-//  dvm($data_entities);
-
+function pdf_forms_rules_action_save_submission($bundle, $token_objects) {
   $entity = entity_get_controller('pdf_form')->create(array('bundle' => $bundle));
   global $user;
   $entity->uid = $user->uid;
-
+  //Save the blank submission so we have a valid submission ID before generating the file
+  pdf_forms_save($entity);
   module_load_include('inc', 'pdf_forms', 'includes/pdf_forms.pdftk');
 
-  // dvm(pdftk_prepare_submission_data($entity, $data_entities));.
-  $file = pdf_forms_pdftk_create_completed_form($entity, $data_entities);
+  $entities = array();
+  //Rules returns the list of entities using EntityDrupalWrapper, we convert them to traditional entity objects
+  foreach ($token_objects as $token_entity) {
+    //Uncomment this line will result in tokens being presented as [entity_type-bundle]
+    //$entity_category = $token_entity->type().'-'.$token_entity->getBundle();
+    $entity_category = $token_entity->type();
+    $entity_array = entity_load($token_entity->type(), array($token_entity->getIdentifier()));
+    foreach ($entity_array as $id => $object) {
+      $entities[$entity_category] = $object;
+    }
+  }
+
+  $file = pdf_forms_pdftk_create_completed_form($entity, NULL, $entities, $template = FALSE);
+
   $entity->fid = $file->fid;
   $entity->pdfdata = serialize($file->pdfdata);
   pdf_forms_save($entity);

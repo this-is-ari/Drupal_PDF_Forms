@@ -79,6 +79,9 @@ function pdf_forms_schema() {
       'type' => array(
         'type' => 'text'
       ),		
+      'format' => array(
+        'type' => 'text'
+      ),
       'weight' => array(
         'type' => 'int',
 				'default' => 0
@@ -176,7 +179,7 @@ function pdf_forms_schema() {
 * - Ensure that the default template upload directory exists, notify the user if we cannot create it.
 */
 function pdf_forms_enable() {
-  $template_path = variable_get('pdf_forms_template_path', 'public://pdf_form_templates');
+  $template_path = variable_get('pdf_forms_templates_path', 'public://pdf_form_templates');
   if(!file_prepare_directory($template_path, FILE_CREATE_DIRECTORY)) {
     drupal_set_message('Could not create %path for uploading PDF Form templates.', array('%path' => $template_path));
   }
