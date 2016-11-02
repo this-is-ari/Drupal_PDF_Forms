@@ -237,7 +237,11 @@ function pdf_forms_type_edit($form, &$form_state, $pdf_form_type = NULL) {
 				);				
 				// Detect field type
 				$ftype = isset($field_map_data[$id]) ? $field_map_data[$id]['type'] : $field['type'];
-        $fformat = isset($field_map_data[$id]) ? $field_map_data[$id]['format'] : $field['format'];
+        if (!empty($field['format'])) {
+          $fformat = isset($field_map_data[$id]) ? $field_map_data[$id]['format'] : $field['format'];
+        } else {
+          $fformat = "Raw";
+        }
 
 				if(in_array($ftype, $type_options)){
 					$field_type = array(
