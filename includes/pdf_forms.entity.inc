@@ -140,6 +140,7 @@ function pdf_forms_type_edit($form, &$form_state, $pdf_form_type = NULL) {
 
     module_load_include('inc', 'pdf_forms', 'includes/pdf_forms.pdftk');
     if ($fields = pdf_forms_fields($file)) {
+
 			// Options for textfield type
 			$type_options = array('Text' => 'Text', 'Arithmetic' => 'Arithmetic');
 
@@ -212,10 +213,12 @@ function pdf_forms_type_edit($form, &$form_state, $pdf_form_type = NULL) {
 				if(isset($field_map_data[$id])){
 					$required_val = isset($field_map_data[$id]['required']) ? $field_map_data[$id]['required'] : $finfo['required'];
 					$readonly_val = isset($field_map_data[$id]['readonly']) ? $field_map_data[$id]['readonly'] : $finfo['readonly'];
+					$fdvalue = strlen($field_map_data[$id]['value']) ? $field_map_data[$id]['value'] : $field['FieldDefaultValue'];
 				}
 				else{
 					$required_val = $finfo['required'];
 					$readonly_val = $finfo['readonly'];
+					$fdvalue = !empty($field['FieldDefaultValue']) ? $field['FieldDefaultValue'] : '';
 				}				
 				$field_required = array(
 					'#id' => 'fields-table-' . $id . '-required',
@@ -282,7 +285,7 @@ function pdf_forms_type_edit($form, &$form_state, $pdf_form_type = NULL) {
         $value = array(
           '#id' => 'fields-table-' . $id . '-value',
           '#type' => 'textarea',
-          '#default_value' => isset($field_map_data[$id]) ? $field_map_data[$id]['value'] : '',
+          '#default_value' => $fdvalue,
         );
 
         $suffix = array(
@@ -574,6 +577,7 @@ function pdf_forms_create($bundle) {
  * Form for editing/creating a form submission.
  */
 function pdf_forms_edit($form, &$form_state, $bundle = NULL) {
+
   $form_state['bundle'] = $bundle;
   $map = array();
   $results = db_query('SELECT machine_name, type, value, pdf_page, fieldinfo FROM {pdf_forms_field_mapping} WHERE bundle = :bundle ORDER BY weight ASC', array(':bundle' => $bundle));
@@ -595,6 +599,7 @@ function pdf_forms_edit($form, &$form_state, $bundle = NULL) {
 				$formfield = array();
 				if ($field[$fname]['type'] == "Button") {
 					$formfield['#type'] = "checkbox";
+					$formfield['#default_value'] = (!empty($fvalue['value']) && $fvalue['value'] != 'FALSE') ? TRUE : FALSE;
 				}
 				elseif ($field[$fname]['type'] == "Radio") {
 					$formfield['#type'] = "radios";
@@ -605,6 +610,7 @@ function pdf_forms_edit($form, &$form_state, $bundle = NULL) {
 					}
 					$formfield['#options'] = $vars;
 					if(in_array("Off", $options)) $formfield['#default_value'] = 'Off';
+					if(!empty($fvalue['value'])) $formfield['#default_value'] = $fvalue['value'];
 				}
 				elseif ($field[$fname]['type'] == "Choice") {
 					$formfield['#type'] = "select";
@@ -614,7 +620,10 @@ function pdf_forms_edit($form, &$form_state, $bundle = NULL) {
 						$vars[$option] = $option;
 					}
 					$formfield['#options'] = $vars;
-				}
+
+					if(!empty($fvalue['value'])) $formfield['#default_value'] = $fvalue['value'];
+				}				
+
 				else {
 					$formfield['#type'] = "textfield";
 					$formfield['#maxlength'] = "256";

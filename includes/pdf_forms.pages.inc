@@ -235,11 +235,11 @@ function pdf_forms_type_submission_edit($form, &$form_state, $sid) {
 						$formfield['#maxlength'] = "256";
 					}
 					// Check required field
-					if(isset($fvalue['info']['required'])){
+					if(!empty($fvalue['info']['required'])){
 						$formfield['#required'] = TRUE;
 					}		
 					// Check readonly field
-					if(isset($fvalue['info']['readonly'])){
+					if(!empty($fvalue['info']['readonly'])){
 						$formfield['#disabled'] = $fvalue['info']['readonly'];
 						$formfield['#type'] = "hidden";
 						$hiddenfield = TRUE;

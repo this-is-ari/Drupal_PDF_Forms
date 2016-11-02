@@ -56,6 +56,7 @@ function pdf_forms_fields($file = NULL) {
     $field_map = array(
       'FieldType' => 'type',
       'FieldName' => 'name',
+			'FieldValue' => 'FieldDefaultValue',
       'FieldFlags' => 'flags',
       'FieldJustification' => 'justification',
       'FieldStateOption' => 'fieldinfo',
@@ -115,6 +116,9 @@ function pdf_forms_fields($file = NULL) {
 			}
 			else{
 				$fields[$findex]['fieldinfo']['tooltip'] = '';
+			}
+			if(!isset($field['FieldValue'])){
+				$field['FieldValue'][] = '';
 			}
       foreach ($field as $ftype => $fvalue) {
         $fvalue = $fvalue[0];
