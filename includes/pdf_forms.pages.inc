@@ -145,7 +145,7 @@ function pdf_forms_submissions_overview() {
       'data' => t('View PDF'),
     ),
   );
-	
+
   $query = db_select('pdf_forms_data', 's');
   $query->fields('s', array('submission_id', 'uid', 'created', 'fid'))
     ->join('users', 'u', 'u.uid = s.uid');
@@ -196,9 +196,9 @@ function pdf_forms_type_submission_edit($form, &$form_state, $sid) {
 				$form['fieldset'.$fieldset] = array(
 					'#type' => 'fieldset',
 					'#title' => t($fieldset),
-					'#collapsible' => TRUE, 
+					'#collapsible' => TRUE,
 					'#collapsed' => isset($collapsed) ? TRUE : FALSE,
-				);			
+				);
 				foreach ($field as $fname => $fvalue) {
 					$formfield = array();
 					if ($fvalue['type'] == "Button") {
@@ -229,7 +229,7 @@ function pdf_forms_type_submission_edit($form, &$form_state, $sid) {
 						}
 						$formfield['#options'] = $vars;
 
-					}					
+					}
 					else {
 						$formfield['#type'] = "textfield";
 						$formfield['#maxlength'] = "256";
@@ -237,20 +237,20 @@ function pdf_forms_type_submission_edit($form, &$form_state, $sid) {
 					// Check required field
 					if(!empty($fvalue['info']['required'])){
 						$formfield['#required'] = TRUE;
-					}		
+					}
 					// Check readonly field
 					if(!empty($fvalue['info']['readonly'])){
 						$formfield['#disabled'] = $fvalue['info']['readonly'];
 						$formfield['#type'] = "hidden";
 						$hiddenfield = TRUE;
-					}				
+					}
 					// Add field description
 					if(isset($fvalue['info']['tooltip'])){
 						$formfield['#description'] = $fvalue['info']['tooltip'];
 					}
 					$formfield['#title'] = ucfirst(str_replace('^', ' ', $fname));
 					$formfield['#default_value'] = $pdfdata[$fname];
-					
+
 					if(isset($hiddenfield)){
 						$form['fieldset'.$fieldset]['hiddenfields'][$fname] = $formfield;
 						unset($hiddenfield);
@@ -261,7 +261,7 @@ function pdf_forms_type_submission_edit($form, &$form_state, $sid) {
 				}
 				if(!isset($form['fieldset'.$fieldset]['fields'])){
 					hide($form['fieldset'.$fieldset]);
-				} 				
+				}
 				$collapsed = TRUE;
 			}
     }
@@ -280,12 +280,12 @@ function pdf_forms_type_submission_edit($form, &$form_state, $sid) {
 			'#attributes' => array('onclick' => 'if(!confirm("Are you sure you want to discard all changes?")){return false;}'),
 			'#limit_validation_errors' => array(),
 			'#submit' => array(),
-    );		
+    );
     $form['delete_button'] = array(
       '#type' => 'submit',
       '#value' => t('Delete'),
 			'#attributes' => array('onclick' => 'if(!confirm("Are you sure you want to delete submission?")){return false;}'),
-    );	
+    );
 
     return $form;
 
@@ -300,10 +300,7 @@ function pdf_forms_type_submission_edit_submit($form, &$form_state) {
     unset($form_state['values']['form_id'], $form_state['values']['form_token'], $form_state['values']['form_build_id'], $form_state['values']['op'], $form_state['values']['submit_button'], $form_state['values']['delete_button'], $form_state['values']['cancel_button']);
 
     $submission = pdf_forms_load($form_state['build_info']['args'][0]);
-
-    $values = serialize($form_state['values']);
-    $submission->pdfdata = $values;
-    $file = pdf_forms_pdftk_create_completed_form($submission, $data);
+    $file = pdf_forms_pdftk_create_completed_form($submission, $form_state['values']);
     $submission->fid = $file->fid;
 		$submission->is_new_revision = TRUE;
     pdf_forms_save($submission);

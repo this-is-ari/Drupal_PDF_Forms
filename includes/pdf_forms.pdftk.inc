@@ -172,14 +172,8 @@ function pdf_forms_pdftk_process_fields($field_mappings, $token_objects = array(
         break;
 
       case "Button":
-       if (!empty($values[$field_map['machine_name']])) {
+       if (isset($field_map['fieldinfo']['options'][$values[$field_map['machine_name']]])) {
          $values[$field_map['machine_name']] = $field_map['fieldinfo']['options'][$values[$field_map['machine_name']]];
-          /*
-          // Find option not equal to Off
-          foreach($field_map['fieldinfo']['options'] as $option) {
-            if($option != "Off"){
-              break;
-            }*/
           }
         break;
     }
