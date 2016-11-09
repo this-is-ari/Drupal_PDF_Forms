@@ -187,7 +187,7 @@ function pdf_forms_rules_condition_info() {
 /**
  * - Generates a submission for the provided entity.
  */
-function pdf_forms_rules_action_save_submission($bundle, $token_objects) {
+function pdf_forms_rules_action_save_submission($bundle, $token_objects = array()) {
   $entity = entity_get_controller('pdf_form')->create(array('bundle' => $bundle));
   global $user;
   $entity->uid = $user->uid;
