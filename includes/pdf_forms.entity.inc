@@ -141,12 +141,13 @@ function pdf_forms_type_edit($form, &$form_state, $pdf_form_type = NULL) {
     module_load_include('inc', 'pdf_forms', 'includes/pdf_forms.pdftk');
     if ($fields = pdf_forms_fields($file)) {
 
-			// Options for textfield type
-			$type_options = array('Text' => 'Text', 'Arithmetic' => 'Arithmetic');
+	// Options for textfield type
+	$type_options = array('Text' => 'Text', 'Arithmetic' => 'Arithmetic');
 
-			// Options for reformating
-			//@TODO - Format options should only be available for field type "text"
-			$format_options = array('Raw' => 'Raw','English Notation' => 'English Notation');
+	// Options for reformating
+	//@TODO - Format options should only be available for field type "text"
+	//@TODO - Should use constants here
+      $format_options = array('Raw' => 'Raw','Dollars and Cents' => 'Dollars and Cents');
 
       $form['fields']['table'] = array(
         '#tree' => TRUE,
@@ -154,12 +155,12 @@ function pdf_forms_type_edit($form, &$form_state, $pdf_form_type = NULL) {
         '#header' => array(
           array('data' => t('Name')),
           array('data' => t('Settings')),
-					array('data' => t('Prefix')),
-					array('data' => t('Value')),
-					array('data' => t('Suffix')),
-					array('data' => t('Description')),
-					array('data' => t('Weight')),
-					array('data' => t('Page num')),
+	  array('data' => t('Prefix')),
+	  array('data' => t('Value')),
+	  array('data' => t('Suffix')),
+	  array('data' => t('Description')),
+	  array('data' => t('Weight')),
+	  array('data' => t('Page num')),
         ),
 
         '#rows' => array(),
@@ -176,19 +177,18 @@ function pdf_forms_type_edit($form, &$form_state, $pdf_form_type = NULL) {
         // Update the form's default values.
         foreach ($results as $row) {
 
-					$row->fieldinfo = unserialize($row->fieldinfo);
+  	 $row->fieldinfo = unserialize($row->fieldinfo);
           $field_map_data[$row->machine_name] = array(
-						'type' => $row->type,
-            'format' => $row->format,
+	    'type' => $row->type,
             'format' => $row->format,
             'prefix' => $row->prefix,
             'suffix' => $row->suffix,
             'value' => $row->value,
-						'weight' => $row->weight,
-						'pagenum' => $row->pdf_page,
-						'description' => isset($row->fieldinfo['tooltip']) ? $row->fieldinfo['tooltip'] : '',
-						'readonly' => isset($row->fieldinfo['readonly']) ? $row->fieldinfo['readonly'] : 0,
-						'required' => isset($row->fieldinfo['required']) ? $row->fieldinfo['required'] : 0,
+	    'weight' => $row->weight,
+	    'pagenum' => $row->pdf_page,
+	    'description' => isset($row->fieldinfo['tooltip']) ? $row->fieldinfo['tooltip'] : '',
+	    'readonly' => isset($row->fieldinfo['readonly']) ? $row->fieldinfo['readonly'] : 0,
+	    'required' => isset($row->fieldinfo['required']) ? $row->fieldinfo['required'] : 0,
           );
         }
       }
@@ -198,7 +198,8 @@ function pdf_forms_type_edit($form, &$form_state, $pdf_form_type = NULL) {
         if (!isset($field['fieldinfo'])) {
           $field['fieldinfo'] = NULL;
         }
-				$finfo = unserialize($field['fieldinfo']);
+	
+        $finfo = unserialize($field['fieldinfo']);
 
         $id = str_replace(' ', '^', $field['name']);
 
@@ -210,75 +211,72 @@ function pdf_forms_type_edit($form, &$form_state, $pdf_form_type = NULL) {
           '#markup' => $field['name'],
         );
 				
-				if(isset($field_map_data[$id])){
-					$required_val = isset($field_map_data[$id]['required']) ? $field_map_data[$id]['required'] : $finfo['required'];
-					$readonly_val = isset($field_map_data[$id]['readonly']) ? $field_map_data[$id]['readonly'] : $finfo['readonly'];
-					$fdvalue = strlen($field_map_data[$id]['value']) ? $field_map_data[$id]['value'] : $field['FieldDefaultValue'];
-				}
-				else{
-					$required_val = $finfo['required'];
-					$readonly_val = $finfo['readonly'];
-					$fdvalue = !empty($field['FieldDefaultValue']) ? $field['FieldDefaultValue'] : '';
-				}				
-				$field_required = array(
-					'#id' => 'fields-table-' . $id . '-required',
-					'#type' => 'checkbox',
-					'#default_value' => $required_val,
-					'#value' => $required_val,
-					'#title' => t('Required'),
+	if(isset($field_map_data[$id])){
+	  $required_val = isset($field_map_data[$id]['required']) ? $field_map_data[$id]['required'] : $finfo['required'];
+	  $readonly_val = isset($field_map_data[$id]['readonly']) ? $field_map_data[$id]['readonly'] : $finfo['readonly'];
+	  $fdvalue = strlen($field_map_data[$id]['value']) ? $field_map_data[$id]['value'] : $field['FieldDefaultValue'];
+	}
+	else{
+	  $required_val = $finfo['required'];
+	  $readonly_val = $finfo['readonly'];
+	  $fdvalue = !empty($field['FieldDefaultValue']) ? $field['FieldDefaultValue'] : '';
+	}				
+	
+	$field_required = array(
+				'#id' => 'fields-table-' . $id . '-required',
+				'#type' => 'checkbox',
+				'#default_value' => $required_val,
+				'#value' => $required_val,
+				'#title' => t('Required'),
 				);
 				
-				$field_readonly = array(
-					'#id' => 'fields-table-' . $id . '-readonly',
-					'#type' => 'checkbox',
-					'#default_value' => $readonly_val,
-					'#value' => $readonly_val,
-					'#title' => t('Read only'),
+	$field_readonly = array(
+				'#id' => 'fields-table-' . $id . '-readonly',
+				'#type' => 'checkbox',
+				'#default_value' => $readonly_val,
+				'#value' => $readonly_val,
+				'#title' => t('Read only'),
 				);				
-				// Detect field type
-				$ftype = isset($field_map_data[$id]) ? $field_map_data[$id]['type'] : $field['type'];
-        if (!empty($field['format'])) {
-          $fformat = isset($field_map_data[$id]) ? $field_map_data[$id]['format'] : $field['format'];
-        } else {
-          $fformat = "Raw";
-        }
+	// Detect field type
+	$ftype = isset($field_map_data[$id]) ? $field_map_data[$id]['type'] : $field['type'];
+        $fformat = isset($field_map_data[$id]) ? $field_map_data[$id]['format'] : $field['format'];
 
-				if(in_array($ftype, $type_options)){
-					$field_type = array(
-						'#id' => 'fields-table-' . $id . '-type',
-						'#type' => 'select',
-						'#options' => $type_options,
-						'#default_value' => $ftype,
-						'#required' => TRUE,
-					);
+	if(in_array($ftype, $type_options)){
+		$field_type = array(
+				'#id' => 'fields-table-' . $id . '-type',
+				'#type' => 'select',
+				'#options' => $type_options,
+				'#default_value' => $ftype,
+				'#required' => TRUE,
+				);
 
-					$field_format = array(
-					  '#id' => 'fields-table-' . $id . '-format',
-					  '#type' => 'select',
-					  '#options' => $format_options,
-					  '#default_value' => $fformat,
-					  '#required' => TRUE,
-					);
-				}
-				else{
-					$field_type = array(
-						'#id' => 'fields-table-' . $id . '-type',
-						'#type' => 'textfield',
-						'#default_value' => $ftype,
-						'#size' => '6',
-						'#attributes' => array('readonly' => 'readonly'),
-					);
+		$field_format = array(
+				  '#id' => 'fields-table-' . $id . '-format',
+				  '#type' => 'select',
+				  '#options' => $format_options,
+				  '#default_value' => $fformat,
+				  '#required' => TRUE,
+				);
+	}
+	else {
+		$field_type = array(
+				'#id' => 'fields-table-' . $id . '-type',
+				'#type' => 'textfield',
+				'#default_value' => $ftype,
+				'#size' => '6',
+				'#attributes' => array('readonly' => 'readonly'),
+				);
 
-					$field_format = array(
-					  '#id' => 'fields-table-' . $id . '-format',
-					  '#type' => 'textfield',
-					  '#default_value' => $format_options['Raw'],
-					  '#size' => '6',
-					  '#attributes' => array('readonly' => 'readonly'),
-					);
-				}
+		$field_format = array(
+				'#id' => 'fields-table-' . $id . '-format',
+				'#type' => 'textfield',
+				'#default_value' => 'N/A',
+				'#size' => '6',
+				'#attributes' => array('readonly' => 'readonly'),
+				);
+	}
 
-				$field_settings = array('required' => $field_required, 'readonly' => $field_readonly, 'type' => $field_type, 'format' => $field_format);
+	$field_settings = array('required' => $field_required, 'readonly' => $field_readonly, 'type' => $field_type, 'format' => $field_format);
 				
         $prefix = array(
           '#id' => 'fields-table-' . $id . '-prefix',

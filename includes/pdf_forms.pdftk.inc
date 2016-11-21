@@ -180,7 +180,7 @@ function pdf_forms_pdftk_process_fields($field_mappings, $token_objects = array(
 
     //Process field formatting
     switch ($field_map['format']) {
-      case "English Notation":
+      case "Dollars and Cents":
         $values[$field_map['machine_name']] = floatval(filter_var($values[$field_map['machine_name']],FILTER_SANITIZE_NUMBER_FLOAT));
         setlocale(LC_MONETARY, 'en_US');
         $values[$field_map['machine_name']] = money_format('%!i', $values[$field_map['machine_name']]);
@@ -228,8 +228,9 @@ function pdf_forms_pdftk_create_completed_form($entity, $values = array(), $toke
 
 		$filename_raw = db_query('SELECT filename FROM {pdf_forms_type} WHERE bundle = :bundle', array(':bundle' => $entity->bundle))->fetchField();
 		$filename = token_replace($filename_raw, $token_objects);
-    //Sanitize Filename
-    $filename = preg_replace(array('/\s/', '/\.[\.]+/', '/[^\w_\.\-]/'), array('_', '.', ''), $filename);
+
+		//Sanitize Filename
+    		$filename = preg_replace(array('/\s/', '/\.[\.]+/', '/[^\w_\.\-]/'), array('_', '.', ''), $filename);
 
 		$destination =  "{$save_path}/{$filename}";
 		$XFDF = pdf_forms_generate_xfdf("{$filename}.pdf.xfdf", $map, 'UTF-8');
