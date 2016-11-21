@@ -197,13 +197,15 @@ function pdf_forms_rules_action_save_submission($bundle, $token_objects = array(
 
   $entities = array();
   //Rules returns the list of entities using EntityDrupalWrapper, we convert them to traditional entity objects
-  foreach ($token_objects as $token_entity) {
-    //Uncomment this line will result in tokens being presented as [entity_type-bundle]
-    //$entity_category = $token_entity->type().'-'.$token_entity->getBundle();
-    $entity_category = $token_entity->type();
-    $entity_array = entity_load($token_entity->type(), array($token_entity->getIdentifier()));
-    foreach ($entity_array as $id => $object) {
-      $entities[$entity_category] = $object;
+  if (count($token_objects) > 0) {
+    foreach ($token_objects as $token_entity) {
+      //Uncomment this line will result in tokens being presented as [entity_type-bundle]
+      //$entity_category = $token_entity->type().'-'.$token_entity->getBundle();
+      $entity_category = $token_entity->type();
+      $entity_array = entity_load($token_entity->type(), array($token_entity->getIdentifier()));
+      foreach ($entity_array as $id => $object) {
+        $entities[$entity_category] = $object;
+      }
     }
   }
 
