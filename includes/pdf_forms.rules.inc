@@ -106,7 +106,6 @@ function pdf_forms_rules_event_info() {
 
 /**
  * Implements hook_rules_action_info
- * - fillpdf_entity_save_file Generates a FillPDF file for a provided entity.
  */
 function pdf_forms_rules_action_info() {
 
@@ -141,6 +140,13 @@ function pdf_forms_rules_action_info() {
         'type' => 'list<entity>',
         'label' => t('Entities'),
         'description' => t('These entities will be used to retrieve token values when populating the PDF form '),
+        'optional' => TRUE,
+        'allow null' => TRUE,
+      ),
+      'versions' => array(
+        'type' => 'list<integer>',
+        'label' => t('Document Versions to use'),
+        'description' => t('Include fields marked with these version numbers when generating the PDF'),
         'optional' => TRUE,
         'allow null' => TRUE,
       ),
@@ -187,7 +193,7 @@ function pdf_forms_rules_condition_info() {
 /**
  * - Generates a submission for the provided entity.
  */
-function pdf_forms_rules_action_save_submission($bundle, $token_objects = array()) {
+function pdf_forms_rules_action_save_submission($bundle, $token_objects = array(), $versions) {
   $entity = entity_get_controller('pdf_form')->create(array('bundle' => $bundle));
   global $user;
   $entity->uid = $user->uid;
@@ -209,7 +215,11 @@ function pdf_forms_rules_action_save_submission($bundle, $token_objects = array(
     }
   }
 
-  $file = pdf_forms_pdftk_create_completed_form($entity, NULL, $entities, $template = FALSE);
+  if (!isset($versions)) {
+    $versions = array(1);
+  }
+
+  $file = pdf_forms_pdftk_create_completed_form($entity, NULL, $entities, $template = FALSE, $versions);
 
   $entity->fid = $file->fid;
   $entity->pdfdata = serialize($file->pdfdata);

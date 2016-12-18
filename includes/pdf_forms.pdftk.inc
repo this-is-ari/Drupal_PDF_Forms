@@ -138,8 +138,18 @@ function pdf_forms_fields($file = NULL) {
 /**
  * Returns the field mapping for an entity bundle.
  */
-function pdf_forms_pdftk_get_field_map($entity) {
-  $field_mappings = db_query('SELECT * FROM {pdf_forms_field_mapping} WHERE bundle = :bundle', array(':bundle' => $entity->bundle))->fetchAll(PDO::FETCH_ASSOC);
+function pdf_forms_pdftk_get_field_map($entity, $versions = array(1)) {
+  $query = '';
+  $query_values = array(':bundle' => $entity->bundle);
+
+  foreach ($versions as $version) {
+    $query_prefix = ($query == '') ? ' AND' : ' OR';
+    $query = $query_prefix . " version =:version".$version;
+    $query_values[':version'.$version] = $version;
+  }
+  $query = "SELECT * FROM {pdf_forms_field_mapping} WHERE bundle = :bundle" . $query;
+
+  $field_mappings = db_query($query, $query_values)->fetchAll(PDO::FETCH_ASSOC);
   return ($field_mappings);
 }
 
@@ -201,9 +211,10 @@ function pdf_forms_pdftk_process_fields($field_mappings, $token_objects = array(
  * @param $token_objects - This is a list of entities we would like to use Token values from
  * @param $values - if we have values already from a form submission
  * @param $template - are we specifing the PDF file to use?
+ * @param $versions - which field mapping versions should we include in the generation? 
  * @return the File object.
  */
-function pdf_forms_pdftk_create_completed_form($entity, $values = array(), $token_objects = array(), $template = FALSE) {
+function pdf_forms_pdftk_create_completed_form($entity, $values = array(), $token_objects = array(), $template = FALSE, $versions = array(1)) {
 
   $save_path = variable_get('pdf_forms_submissions_path', 'public://');
   // Load up the template.
@@ -218,7 +229,7 @@ function pdf_forms_pdftk_create_completed_form($entity, $values = array(), $toke
 
   // Load up the field map data.
   $map = array();
-  $map = pdf_forms_pdftk_get_field_map($entity);
+  $map = pdf_forms_pdftk_get_field_map($entity, $versions);
 
 	if(count($map)){
 		$map = pdf_forms_pdftk_process_fields($map, $token_objects, $values);
