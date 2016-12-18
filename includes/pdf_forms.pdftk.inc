@@ -139,16 +139,15 @@ function pdf_forms_fields($file = NULL) {
  * Returns the field mapping for an entity bundle.
  */
 function pdf_forms_pdftk_get_field_map($entity, $versions = array(1)) {
-  $query = '';
+  $query = "SELECT * FROM {pdf_forms_field_mapping} WHERE bundle = :bundle";
   $query_values = array(':bundle' => $entity->bundle);
 
   foreach ($versions as $version) {
-    $query_prefix = ($query == '') ? ' AND' : ' OR';
-    $query = $query_prefix . " version =:version".$version;
+    $query_prefix = ($versions[0] == $version) ? ' AND' : ' OR';
+    $query .= $query_prefix . " version =:version".$version;
     $query_values[':version'.$version] = $version;
   }
-  $query = "SELECT * FROM {pdf_forms_field_mapping} WHERE bundle = :bundle" . $query;
-
+  
   $field_mappings = db_query($query, $query_values)->fetchAll(PDO::FETCH_ASSOC);
   return ($field_mappings);
 }
