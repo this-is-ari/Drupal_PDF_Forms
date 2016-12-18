@@ -82,6 +82,10 @@ function pdf_forms_schema() {
       'format' => array(
         'type' => 'text'
       ),
+      'version' => array(
+        'type' => 'int',
+        'default' => 1
+      ),	
       'weight' => array(
         'type' => 'int',
 				'default' => 0
@@ -220,6 +224,28 @@ function pdf_forms_update_7005() {
   );
   db_add_field( 'pdf_forms_field_mapping', 'weight', $spec);
 }
+
+function pdf_forms_update_7006() {
+  $spec = array(
+    'type' => 'varchar',
+    'description' => "PDF Field Mapping Format",
+    'length' => 20,
+    'not null' => FALSE,
+  ); 
+  db_add_field( 'pdf_forms_field_mapping', 'format', $spec);
+}
+
+function pdf_forms_update_7007() {
+  $spec = array(
+    'type' => 'int',
+    'default' => 1,
+    'description' => "PDF Field Mapping Version to apply to",
+    'length' => 2,
+    'not null' => FALSE,
+  ); 
+  db_add_field( 'pdf_forms_field_mapping', 'version', $spec);
+}
+
 /**
 * Implements hook_requirements
 */

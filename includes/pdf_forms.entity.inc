@@ -159,6 +159,7 @@ function pdf_forms_type_edit($form, &$form_state, $pdf_form_type = NULL) {
 	  array('data' => t('Value')),
 	  array('data' => t('Suffix')),
 	  array('data' => t('Description')),
+    array('data' => t('Version')),
 	  array('data' => t('Weight')),
 	  array('data' => t('Page num')),
         ),
@@ -185,6 +186,7 @@ function pdf_forms_type_edit($form, &$form_state, $pdf_form_type = NULL) {
             'suffix' => $row->suffix,
             'value' => $row->value,
 	    'weight' => $row->weight,
+      'version' => $row->version,
 	    'pagenum' => $row->pdf_page,
 	    'description' => isset($row->fieldinfo['tooltip']) ? $row->fieldinfo['tooltip'] : '',
 	    'readonly' => isset($row->fieldinfo['readonly']) ? $row->fieldinfo['readonly'] : 0,
@@ -239,7 +241,11 @@ function pdf_forms_type_edit($form, &$form_state, $pdf_form_type = NULL) {
 				);				
 	// Detect field type
 	$ftype = isset($field_map_data[$id]) ? $field_map_data[$id]['type'] : $field['type'];
-        $fformat = isset($field_map_data[$id]) ? $field_map_data[$id]['format'] : $field['format'];
+  if (isset($field_map_data[$id]) || isset($field['format'])) {
+    $fformat = isset($field_map_data[$id]) ? $field_map_data[$id]['format'] : $field['format'];
+  } else {
+    $fformat = 'Raw';
+  }
 
 	if(in_array($ftype, $type_options)){
 		$field_type = array(
@@ -323,6 +329,14 @@ function pdf_forms_type_edit($form, &$form_state, $pdf_form_type = NULL) {
 					'#default_value' => isset($field_map_data[$id]) ? $field_map_data[$id]['pagenum'] : 1,
         );
 
+        $fieldversion = array(
+          '#id' => 'fields-table-' . $id . '-fieldversion',
+          '#type' => 'textfield',
+					'#size' => 2,
+					'#default_value' => isset($field_map_data[$id]) ? $field_map_data[$id]['version'] : 1,
+        );
+
+
         $machine_name = array(
           '#id' => 'fields-table-' . $id . '-machine-name',
           '#type' => 'value',
@@ -341,6 +355,7 @@ function pdf_forms_type_edit($form, &$form_state, $pdf_form_type = NULL) {
           'value' => &$value,
           'suffix' => &$suffix,
 					'fielddesc' => &$fielddesc,
+          'fieldversion' => &$fieldversion,
 					'fieldweight' => &$fieldweight,
 					'pagenum' => &$fieldpage,
           'machine_name' => &$machine_name,
@@ -354,6 +369,7 @@ function pdf_forms_type_edit($form, &$form_state, $pdf_form_type = NULL) {
           'value' => &$value,
           'suffix' => &$suffix,
 					'fielddesc' => &$fielddesc,
+          'fieldversion' => &$fieldversion,
 					'fieldweight' => &$fieldweight,
 					'pagenum' => &$fieldpage,
           'fieldinfo' => &$fieldinfo,
@@ -367,6 +383,7 @@ function pdf_forms_type_edit($form, &$form_state, $pdf_form_type = NULL) {
         unset($value);
         unset($suffix);
 				unset($fielddesc);
+        unset($fieldversion);
 				unset($fieldweight);
 				unset($fieldpage);
         unset($machine_name);
@@ -424,19 +441,6 @@ function pdf_forms_type_edit_submit($form, &$form_state) {
       // This is the first time this bundle has been saved.
       $new_bundle = TRUE;
     }
-    /*elseif ($pdf_form_type->fid !== $values['fid']) {
-      // We are editing a bundle - the File ID has changed, which means we need to remove the old file + regenerate mappings
-      // we need to delete mappings and update the fid.
-      $old_file = file_load($pdf_form_type->fid);
-      if ($old_file) {
-        file_usage_delete($old_file, 'pdf_forms', $pdf_form_type->bundle, 0);
-        file_delete($old_file);
-				db_delete('pdf_forms_field_mapping')
-					->condition('bundle', $pdf_form_type->bundle)
-					->execute();
-				unset($form_state['input']['fields']);
-      }
-    }*/
     $file = file_load($values['fid']);
     $file->status = FILE_STATUS_PERMANENT;
     file_save($file);
@@ -475,7 +479,8 @@ function pdf_forms_type_edit_submit($form, &$form_state) {
 			'suffix' => $field['suffix'],
 		  'format' => $field['field_settings']['format'],
 			'type' => $field['field_settings']['type'],
-			'weight' => (int)$field['fieldweight'],
+			'weight' => $field['fieldweight'],
+      'version' => $field['fieldversion'],
 			'pdf_page' => $field['pagenum'],
 			'fieldinfo' => $field['fieldinfo'],
 		);
@@ -542,9 +547,7 @@ function pdf_forms_view($entity, $view_mode = 'full') {
   $entity->content = array(
     '#view_mode' => $view_mode,
   );
-  // field_attach_prepare_view($entity_type, array($entity->submission_id => $entity), $view_mode);
-  // entity_prepare_view($entity_type, array($entity->submission_id => $entity));
-  // $entity->content += field_attach_view($entity_type, $entity, $view_mode);.
+  
   if (empty($entity->fid)) {
     module_load_include('inc', 'pdf_forms', 'includes/pdf_forms.pdftk');
     $file = pdf_forms_pdftk_create_completed_form($entity);
@@ -571,7 +574,6 @@ function pdf_forms_view($entity, $view_mode = 'full') {
  */
 function pdf_forms_create($bundle) {
   module_load_include('inc', 'pdf_forms', 'includes/pdf_forms.pdftk');
-  // $entity = entity_get_controller('pdf_form')->create($bundle);
   return drupal_get_form('pdf_forms_edit', $bundle);
 }
 
