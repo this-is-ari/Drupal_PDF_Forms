@@ -80,7 +80,8 @@ function pdf_forms_schema() {
         'type' => 'text'
       ),		
       'format' => array(
-        'type' => 'text'
+        'type' => 'text',
+        'default' => 'Raw'
       ),
       'version' => array(
         'type' => 'int',
@@ -229,6 +230,7 @@ function pdf_forms_update_7006() {
   $spec = array(
     'type' => 'varchar',
     'description' => "PDF Field Mapping Format",
+    'default' => "Raw",
     'length' => 20,
     'not null' => FALSE,
   ); 
