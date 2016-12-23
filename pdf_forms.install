@@ -245,6 +245,8 @@ function pdf_forms_update_7007() {
     'length' => 2,
     'not null' => FALSE,
   ); 
+  db_query("UPDATE `pdf_forms_field_mapping` set `type` = 'Arithmetic' WHERE `type` = 'Addition'");
+  
   db_add_field( 'pdf_forms_field_mapping', 'version', $spec);
 }
 
