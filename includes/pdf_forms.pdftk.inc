@@ -160,9 +160,10 @@ function pdf_forms_pdftk_get_field_map($entity, $versions = array(1)) {
  * @return an Array of values to insert into the form
  */
 function pdf_forms_pdftk_process_fields($field_mappings, $token_objects = array(), $values = array()) {
-
+	if(!is_array($values)) $values = array();
   foreach ($field_mappings as $field_map) {
     // If form value is provided override field mappings
+		
 		$values[$field_map['machine_name']] = (array_key_exists($field_map['machine_name'], $values) ? $values[$field_map['machine_name']] : $field_map['value']);
 
     //Replace Tokens
