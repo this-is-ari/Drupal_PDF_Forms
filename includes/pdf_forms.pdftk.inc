@@ -163,7 +163,7 @@ function pdf_forms_pdftk_process_fields($field_mappings, $token_objects = array(
 
   foreach ($field_mappings as $field_map) {
     // If form value is provided override field mappings
-    $values[$field_map['machine_name']] = (!empty($values[$field_map['machine_name']]) ? $values[$field_map['machine_name']] : $field_map['value']);
+		$values[$field_map['machine_name']] = (array_key_exists($field_map['machine_name'], $values) ? $values[$field_map['machine_name']] : $field_map['value']);
 
     //Replace Tokens
     $values[$field_map['machine_name']] = (!empty($values[$field_map['machine_name']]) ? token_replace($values[$field_map['machine_name']], $token_objects) : $values[$field_map['machine_name']]);
@@ -229,10 +229,11 @@ function pdf_forms_pdftk_create_completed_form($entity, $values = array(), $toke
   // Load up the field map data.
   $map = array();
   $map = pdf_forms_pdftk_get_field_map($entity, $versions);
-
+dpm($map);
+dpm($values);
 	if(count($map)){
 		$map = pdf_forms_pdftk_process_fields($map, $token_objects, $values);
-
+dpm($map);
 		// Create the xfdf
 		module_load_include('inc', 'pdf_forms', 'includes/pdf_forms.xfdf');
 
