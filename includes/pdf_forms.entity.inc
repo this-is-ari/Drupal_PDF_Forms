@@ -216,7 +216,8 @@ function pdf_forms_type_edit($form, &$form_state, $pdf_form_type = NULL) {
 	if(isset($field_map_data[$id])){
 	  $required_val = isset($field_map_data[$id]['required']) ? $field_map_data[$id]['required'] : $finfo['required'];
 	  $readonly_val = isset($field_map_data[$id]['readonly']) ? $field_map_data[$id]['readonly'] : $finfo['readonly'];
-	  $fdvalue = strlen($field_map_data[$id]['value']) ? $field_map_data[$id]['value'] : $field['FieldDefaultValue'];
+	  //$fdvalue = strlen($field_map_data[$id]['value']) ? $field_map_data[$id]['value'] : $field['FieldDefaultValue'];
+		$fdvalue = $field_map_data[$id]['value'];
 	}
 	else{
 	  $required_val = $finfo['required'];
@@ -294,6 +295,7 @@ function pdf_forms_type_edit($form, &$form_state, $pdf_form_type = NULL) {
           '#id' => 'fields-table-' . $id . '-value',
           '#type' => 'textarea',
           '#default_value' => $fdvalue,
+					'#value' => $fdvalue,
         );
 
         $suffix = array(
@@ -423,7 +425,7 @@ function pdf_forms_type_edit($form, &$form_state, $pdf_form_type = NULL) {
 function pdf_forms_type_edit_submit($form, &$form_state) {
 
   $values = $form_state['values'];
-	
+
   $pdf_form_type = $values['pdf_form_type'];
 
   $new_bundle = FALSE;
