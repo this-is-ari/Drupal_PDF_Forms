@@ -229,11 +229,10 @@ function pdf_forms_pdftk_create_completed_form($entity, $values = array(), $toke
   // Load up the field map data.
   $map = array();
   $map = pdf_forms_pdftk_get_field_map($entity, $versions);
-dpm($map);
-dpm($values);
+
 	if(count($map)){
 		$map = pdf_forms_pdftk_process_fields($map, $token_objects, $values);
-dpm($map);
+
 		// Create the xfdf
 		module_load_include('inc', 'pdf_forms', 'includes/pdf_forms.xfdf');
 
