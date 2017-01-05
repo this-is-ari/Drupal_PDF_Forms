@@ -302,6 +302,8 @@ function pdf_forms_type_submission_edit_submit($form, &$form_state) {
     $submission = pdf_forms_load($form_state['build_info']['args'][0]);
     $file = pdf_forms_pdftk_create_completed_form($submission, $form_state['values']);
     $submission->fid = $file->fid;
+		$values = serialize($form_state['values']);
+		$submission->pdfdata = $values;		
 		$submission->is_new_revision = TRUE;
     pdf_forms_save($submission);
 		drupal_set_message('Changes saved');
