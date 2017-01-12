@@ -249,7 +249,14 @@ function pdf_forms_type_submission_edit($form, &$form_state, $sid) {
 						$formfield['#description'] = $fvalue['info']['tooltip'];
 					}
 					$formfield['#title'] = ucfirst(str_replace('^', ' ', $fname));
-					$formfield['#default_value'] = $pdfdata[$fname];
+					switch($formfield['#type']){
+						case 'checkbox':
+							$formfield['#default_value'] = (bool)$pdfdata[$fname];
+							break;
+						default: 
+							$formfield['#default_value'] = $pdfdata[$fname];
+					}
+					
 
 					if(isset($hiddenfield)){
 						$form['fieldset'.$fieldset]['hiddenfields'][$fname] = $formfield;
