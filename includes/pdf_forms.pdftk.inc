@@ -144,9 +144,10 @@ function pdf_forms_pdftk_get_field_map($entity, $versions = array(1)) {
 
   foreach ($versions as $version) {
     $query_prefix = ($versions[0] == $version) ? ' AND (' : ' OR';
-    $query .= $query_prefix . " version =:version".$version.')';
+    $query .= $query_prefix . " version =:version".$version;
     $query_values[':version'.$version] = $version;
   }
+  $query = $query . ')';
   
   $field_mappings = db_query($query, $query_values)->fetchAll(PDO::FETCH_ASSOC);
   return ($field_mappings);
