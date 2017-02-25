@@ -179,7 +179,9 @@ function pdf_forms_pdftk_process_fields($field_mappings, $token_objects = array(
       case "Arithmetic":
         $m = new ctools_math_expr;
         $m->suppress_errors = TRUE;
-        $values[$field_map['machine_name']] = $m->evaluate($values[$field_map['machine_name']]);
+	$formula = str_replace( ',', '', $values[$field_map['machine_name']]);
+        $formula = rtrim($formula,"+-*/");
+        $values[$field_map['machine_name']] = $m->evaluate($formula);
         break;
 
       case "Button":
