@@ -143,8 +143,8 @@ function pdf_forms_pdftk_get_field_map($entity, $versions = array(1)) {
   $query_values = array(':bundle' => $entity->bundle);
 
   foreach ($versions as $version) {
-    $query_prefix = ($versions[0] == $version) ? ' AND' : ' OR';
-    $query .= $query_prefix . " version =:version".$version;
+    $query_prefix = ($versions[0] == $version) ? ' AND (' : ' OR';
+    $query .= $query_prefix . " version =:version".$version.')';
     $query_values[':version'.$version] = $version;
   }
   
